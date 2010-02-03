@@ -1,0 +1,41 @@
+<?php
+
+/**
+ * Implementation of hook_install.
+ */
+function aef_easy_view_install() {
+  //Fully install dependencies, and make them available (D6 flaw)
+  set_time_limit(0);
+  include_once(drupal_get_path('module', 'aef_utilities') .'/aef_utilities.module');
+  aef_utilities_install_dependencies();
+
+	drupal_install_schema('aef_easy_view');
+}
+
+/**
+ * Implementation of hook_uninstall.
+ */
+function aef_easy_view_uninstall() {
+	drupal_uninstall_schema('aef_easy_view');
+}
+
+/**
+ * Implementation of hook_schema.
+ */
+function aef_easy_view_schema() {
+	$schema['aef_easy_view_views'] = array(
+	    'fields' => array(
+	         'viid' => array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE, 'description' => 'Unique View ID'),
+	         'easy_view_name' => array('type' => 'varchar', 'length' => '255', 'not null' => TRUE, 'description' => 'the title of the easy view view'),
+	         'title' => array('type' => 'varchar', 'length' => '255', 'not null' => TRUE, 'description' => 'the title of the view'),
+	         'data' => array('type' => 'text', 'size' => 'big', 'not null' => TRUE, 'description' => 'The data to be stored', 'serialize' => true),
+	         'uid' => array('type' => 'int', 'not null' => TRUE, 'default' => 0, 'description' => 'Creator User ID'),
+	         'created' => array('type' => 'int', 'not null' => TRUE, 'default' => 0, 'description' => 'Creation date'),
+	         'changed' => array('type' => 'int', 'not null' => TRUE, 'default' => 0, 'description' => 'Update date'),
+		),
+	    'primary key' => array(
+	    	'viid',
+		),
+	);
+	return $schema;
+}

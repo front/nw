@@ -1,0 +1,398 @@
+<?php
+
+/**
+ * Implementation of hook_init()
+ */
+function aef_easy_view_taxonomy_init()
+{
+  drupal_add_css(drupal_get_path('module', 'aef_easy_view_taxonomy') . '/aef_easy_view_taxonomy.css');
+}
+
+/**
+ * Implementation of hook_views_api
+ */
+function aef_easy_view_taxonomy_views_api() {
+  return array(
+    'api' => 2,
+    'path' => drupal_get_path('module', 'aef_easy_view_taxonomy') .'/views',
+  );
+}
+
+/**
+ * Implementation of hook_easy_view()
+ */
+function aef_easy_view_taxonomy_easy_view()
+{
+  return array(
+   'easy_view_taxonomy' => array(
+     'key' => 'easy_view_taxonomy', //The internal name for this easyview
+     'title' => t('Tagged content'), // The title of this easyview
+     'view_name' => 'aef_easy_view_taxonomy', //The name of the view to use
+     'view_handler_name' => 'default', //The id of the view handler to use (e.g. page_1)
+     'view_handler_rss_name' => 'feed_2', //The id of the rss view handler to use (e.g. feed)
+     'element_name' => 'easy_view_taxonomy', //The form id of the form to use for the settings
+     'form_submit' => 'easy_view_taxonomy_easy_view_form_submit',
+   )
+  );
+}
+
+
+/**
+ * Implementation of FAPI hook_elements().
+ *
+ * Any FAPI callbacks needed for individual widgets can be declared here,
+ * and the element will be passed to those callbacks for processing.
+ *
+ * Drupal will automatically theme the element using a theme with
+ * the same name as the hook_elements key.
+ *
+ * Autocomplete_path is not used by text_widget but other widgets can use it
+ * (see nodereference and userreference).
+ */
+function aef_easy_view_taxonomy_elements() {
+  return array(
+    'easy_view_taxonomy' => array(
+      '#input' => TRUE,
+      '#delta' => 0,
+      '#process' => array('easy_view_taxonomy_process'),
+      //'#value_callback' => 'aef_easy_view_widget_value',
+      '#element_validate' => array('easy_view_taxonomy_validate'),
+      '#autocomplete_path' => FALSE,
+    ),
+  );
+}
+
+/**
+ * Process an individual element.
+ *
+ * Build the form element. When creating a form using FAPI #process,
+ * note that $element['#value'] is already set.
+ *
+ * The $fields array is in $form['#field_info'][$element['#field_name']].
+ */
+function easy_view_taxonomy_process($element, $edit, $form_state, $form)
+{
+  _aef_easy_view_taxonomy_tag_selection($element, $element, $element['#value']['element'], "main");
+
+  $element['extra-tags'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('More tags filters'),
+    '#collapsible' => true,
+    '#collapsed' => (
+      $element['#value']['element']['extra-tags']['tags'][0]['vocabulary'] == 0
+      ),
+  );
+
+  $extra_filter_count = 1;
+  _aef_easy_view_taxonomy_tag_selection($element, $element['extra-tags']['tags'][0], 
+    $element['#value']['element']['extra-tags']['tags'][0], "extra0");
+
+  if(is_array($element['#value']['element']['extra-tags']['tags']))
+  {
+    foreach($element['#value']['element']['extra-tags']['tags'] as $delta => $data)
+    {
+      if($delta > 0 && $data['vocabulary'] > 0)
+      {
+        _aef_easy_view_taxonomy_tag_selection($element, $element['extra-tags']['tags'][$delta], $element['#value']['element']['extra-tags']['tags'][$delta], "extra" . $delta);
+        $extra_filter_count++;
+      }
+    }
+  }
+
+  if($element['#post'][$element['#field_name'] .'_'. $element['#delta'] . '_extratags_addmore'] != "")
+  {
+    _aef_easy_view_taxonomy_tag_selection($element, $element['extra-tags']['tags'][$extra_filter_count], $element['#value']['element']['extra-tags']['tags'][$extra_filter_count], "extra" . ($extra_filter_count));
+    $extra_filter_count++;
+  }
+
+  $element['extra-tags']['add_more'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add another tag filter'),
+    '#name' => $element['#field_name'] .'_'. $element['#delta'] . '_extratags_addmore',
+   	'#ahah' => array(
+   	  'path' => "aef_easy_view/ahah/" . $element['#type_name'] . '/' . $element['#field_name'] . '/' . $element['#delta'],
+      'wrapper' => $element['#field_name_wrapper'],
+      'method' => 'replace',
+      'effect' => 'fade',
+    ),
+  );
+
+  $element['extra'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('More filters'),
+    '#collapsible' => true,
+    '#collapsed' => (
+      (
+        $element['#value']['element']['extra']['content_type'] == "all" ||
+        $element['#value']['element']['extra']['content_type'] == ""
+      ) &&
+      (
+        $element['#value']['element']['extra']['mindate_limit'] == "all" ||
+        $element['#value']['element']['extra']['mindate_limit'] == ""
+      )&&
+      $element['#value']['element']['extra']['date_limit']['date'] == ""),
+  );
+
+  $element['extra']['content_type'] = array(
+    '#title' => t('Select the content type'),
+    '#type' => 'select',
+    '#options' => _aef_easy_view_taxonomy_content_types(),
+    '#value' => $element['#value']['element']['extra']['content_type'],
+    );
+
+  $element['extra']['mindate_limit'] = array(
+    '#title' => t('Content age'),
+    '#type' => 'select',
+    '#value' => $element['#value']['element']['extra']['mindate_limit'],
+    '#options' => array(
+      'all' => t('- All -'),
+      '1day' => t('1 day old max'),
+      '1week' => t('1 week old max'),
+      '1month' => t('1 month old max'),
+      ),
+   	'#ahah' => array(
+   	  'path' => "aef_easy_view/ahah/" . $element['#type_name'] . '/' . $element['#field_name'] . '/' . $element['#delta'],
+      'wrapper' => $element['#field_name_wrapper'],
+      'method' => 'replace',
+      'effect' => 'fade',
+    	),
+    );
+
+  if($element['#value']['element']['extra']['mindate_limit'] == "" || $element['#value']['element']['extra']['mindate_limit'] == "all")
+  {
+    $element['extra']['date_limit'] = array(
+      '#title' => t('Maximum creation date'),
+      '#type' => 'date_popup',
+    	'#date_format' => 'Y-m-d',
+      '#default_value' => date('Y-m-d H:i:s', time()),   // current date
+      '#value' => $element['#value']['element']['extra']['date_limit'],
+      '#attributes' => array('class' => 'jscalendar'),
+      '#jscalendar_ifFormat' => '%Y-%m-%d',
+      '#description' => 'Only content with a creation date smaller or equal to this date will be shown. Empty means there is no filtering.'
+      );
+  }  
+  /**if(isset($element['#value']['element']['date_limit']))
+  {
+    $element['date_limit']['#value'] = $element['#value']['element']['date_limit'];
+  }*/
+
+
+
+
+  return $element;  
+}
+
+/**
+ * Build a taxonomy selection widget
+ */
+function _aef_easy_view_taxonomy_tag_selection($base_element, &$element, $element_value, $element_id)
+{
+  $vocabularies = taxonomy_get_vocabularies();
+
+  $voc_options = array(0 => '- ' . t('Select a vocabulary') . ' -');
+  foreach ($vocabularies as $vid => $vocabulary) {
+    $voc_options[$vid] = $vocabulary->name;
+  }
+
+  $element['vocabulary'] = array(
+    '#title' => t('Select the vocabulary'),
+    '#type' => 'select',
+    '#options' => $voc_options,
+    '#value' => $element_value['vocabulary'],
+   	'#ahah' => array(
+   	  'path' => "aef_easy_view/ahah/" . $base_element['#type_name'] . '/' . $base_element['#field_name'] . '/' . $base_element['#delta'],
+      'wrapper' => $base_element['#field_name_wrapper'],
+      'method' => 'replace',
+      'effect' => 'fade',
+    	),
+    );
+
+  //Let's see what selection widget we will use
+  $term_selection_widget = ($element_value['tag-widget'] !=  "")?
+    $element_value['tag-widget'] : "textfield";
+  if($base_element['#post'][$base_element['#field_name'] .'_'. $base_element['#delta'] . '_' . $element_id . '_changewidget'] != "")
+  {
+    if($term_selection_widget == "textfield")
+      $term_selection_widget = "select";
+    else
+      $term_selection_widget = "textfield";
+  }
+  $element['tag-widget'] = array(
+    '#type' => 'hidden',
+    '#value' => $term_selection_widget,
+  );
+
+
+  $element['pre-tag'] = array(
+    "#value" => '<div class="form-item"><label>' . t('Show stories with the following tags:') . '</label><div class="container-inline aef-easy-view-tag-selector">',
+  );
+  if($term_selection_widget == "select")
+  {
+    $tag_options = array();
+    if($element_value['vocabulary'] != 0)
+    {
+      $tree = taxonomy_get_tree($element_value['vocabulary']);
+      if ($tree && (count($tree) > 0)) {
+        foreach ($tree as $term) {
+          $tag_options[$term->tid] = str_repeat('-', $term->depth) . $term->name;
+        }
+      }
+    }
+    $element['tag'] = array(
+      '#type' => 'select',
+      '#options' => $tag_options,
+      '#value' => $element_value['tag'],
+    );
+  }
+  else
+  {
+    $element['tag_autocomplete'] = array(
+      '#type' => 'textfield',
+      '#autocomplete_path' => 'taxonomy/autocomplete/' . $element_value['vocabulary'],
+      '#value' => $element_value['tag_autocomplete'],
+    );
+  }
+  $element['tag-change-widget'] = array(
+    '#name' => $base_element['#field_name'] .'_'. $base_element['#delta'] . '_' . $element_id . '_changewidget',
+    '#value' => (($term_selection_widget == "select")?t('Switch to multiple-tags selection'):t('Switch to one-tag selection')),
+    '#type' => 'submit',
+   	'#ahah' => array(
+   	  'path' => "aef_easy_view/ahah/" . $base_element['#type_name'] . '/' . $base_element['#field_name'] . '/' . $base_element['#delta'],
+      'wrapper' => $base_element['#field_name_wrapper'],
+      'method' => 'replace',
+      'effect' => 'fade',
+    	),
+  );
+  $element['post-tag'] = array(
+    "#value" => '</div></div>',
+  );
+
+  $element['pre-tag']['#access'] = ($element_value['vocabulary'] != 0);
+  $element['tag']['#access'] = ($element_value['vocabulary'] != 0);
+  $element['tag_autocomplete']['#access'] = ($element_value['vocabulary'] != 0);
+  $element['tag-change-widget']['#access'] = ($element_value['vocabulary'] != 0);
+  $element['post-tag']['#access'] = ($element_value['vocabulary'] != 0);
+}
+
+/**
+ * Implementation of hook_theme()
+ */
+function aef_easy_view_taxonomy_theme($existing, $type, $theme, $path)
+{
+	return array(
+    'easy_view_taxonomy' => array(
+      'arguments' => array('element' => null),
+    ),
+	);
+}
+
+function theme_easy_view_taxonomy($element) {
+  return $element['#children'];
+}
+
+
+function easy_view_taxonomy_validate(&$element, &$form_state)
+{
+  //Get the element form values
+/**  $element_form_values = $form_state['values'][$element['#field_name']][$element['#delta']]['viid_creator']['view_settings']['form']['element'];
+
+  //No vocabulary selected
+  if($element_form_values['vocabulary'] == 0) 
+    form_error($element, t('No vocabulary has been selected.'));
+
+  //No tag selected
+  if($element_form_values['tag'] == 0) 
+    form_error($element, t('No tag has been selected.'));*/
+}
+
+function easy_view_taxonomy_easy_view_form_submit($form_values)
+{
+  $path_args = array();
+
+  //First args: the tags
+  $tids = array();
+  $tids = _easy_view_taxonomy_easy_view_form_submit_get_tids($form_values['element'], $tids);
+  $path_args[] = (count($tids) > 0)?implode('+', $tids):"all";
+
+  //then the four others tags arguments
+  for($i = 0; $i < 4; $i++)
+  {
+    $tids = array();
+    if($form_values['element']['extra-tags']['tags'][$i]['vocabulary'] > 0)
+    {
+      $tids = _easy_view_taxonomy_easy_view_form_submit_get_tids($form_values['element']['extra-tags']['tags'][$i], $tids);
+    }
+    $path_args[] = (count($tids) > 0)?implode('+', $tids):"all";
+  }
+
+
+  $path_args[] = ($form_values['element']['extra']['content_type'])?$form_values['element']['extra']['content_type']:"all";
+
+  //The feed path will contains all arguments except the date:
+  //It does not make sense for a RSS feed to be filtered by date.
+  $feed_path = implode('/', $path_args);
+
+
+  if($form_values['element']['extra']['date_limit']['date'] == "" && $form_values['element']['extra']['mindate_limit'] == "all")
+  {
+    $path_args[] = "all";
+  }
+  else
+  {
+    if($form_values['element']['extra']['mindate_limit'] != "all")
+    {
+      if($form_values['element']['extra']['mindate_limit'] == '1day')
+        $path_args[] = "P1D--@";
+      else if($form_values['element']['extra']['mindate_limit'] == '1week')
+        $path_args[] = "P1W--@";
+      else if($form_values['element']['extra']['mindate_limit'] == '1month')
+        $path_args[] = "P1M--@";
+    }
+    else if($form_values['element']['extra']['date_limit']['date'])
+      $path_args[] = "1970-01-01--" . $form_values['element']['extra']['date_limit']['date'];
+  }
+
+  //The main path will contains all arguments, including the date.
+  $path = implode('/', $path_args);
+
+  return array(
+    'view_params' => $path,
+    'feed_view_params' => $feed_path,
+    'form_data' => $form_values,
+  );
+}
+
+function _easy_view_taxonomy_easy_view_form_submit_get_tids($element, $cur_tids)
+{
+  if($element['tag-widget'] == "select")
+  {
+    if($element['tag'] != "")
+      $cur_tids[] = $element['tag'];
+  }
+  else
+  {
+    $tags_list = $element['tag_autocomplete'];
+    $tags = explode(',', $tags_list);
+    foreach($tags as $tag)
+    {
+      $tag = trim($tag);
+      $results = taxonomy_get_term_by_name($tag);
+      foreach($results as $result)
+      {
+        if($result->tid > 0 && $result->vid == $element['vocabulary'])
+        {
+          $cur_tids[] = $result->tid;
+          break;
+        }
+      }
+    }
+  }
+
+  return $cur_tids;
+}
+
+
+function _aef_easy_view_taxonomy_content_types()
+{
+  return array('' => t('- All -')) + node_get_types('names');
+}

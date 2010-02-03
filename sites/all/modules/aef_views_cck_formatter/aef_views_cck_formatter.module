@@ -1,0 +1,32 @@
+<?php
+
+
+/**
+ * Implementation of hook_views_api
+ */
+function aef_views_cck_formatter_views_api() {
+  return array(
+    'api' => 2,
+    'path' => drupal_get_path('module', 'aef_views_cck_formatter') .'/views'
+  );
+}
+
+/**
+ * Retrieve a select list of nodereference formatter options excluding the multiple ones
+ */
+function _aef_views_cck_formatter_formatter_options() {
+  $field_types = _content_field_types();
+  $field_type = $field_types['nodereference'];
+
+  foreach ($field_type['formatters'] as $formatter_name => $formatter_info) {
+
+    //If it is a multiple value formatter, skip it
+    if (content_handle('formatter', 'multiple values', $formatter_info) != CONTENT_HANDLE_CORE) {
+      continue;
+    }
+
+    $formatter_options[$formatter_name] = $formatter_info['label'];
+  }
+
+  return $formatter_options;
+}

@@ -1,0 +1,614 @@
+<?php
+
+//This in the hook_init() is provoking problems on particular cases such as node_load in init()
+// and function not found in hook_update()
+module_load_include('inc', 'aef_easy_view', 'aef_easy_view_field');
+
+/**
+ * Implementation of hook_init
+ */
+function aef_easy_view_init() {
+
+  drupal_add_css(drupal_get_path('module', 'aef_easy_view') . '/jcarousel_skins/aef_easy_view_default/aef_easy_view_default.css');
+  drupal_add_css(drupal_get_path('module', 'aef_easy_view') . '/jcarousel_skins/aef_easy_view_one_item/aef_easy_view_one_item.css');
+  drupal_add_css(drupal_get_path('module', 'aef_easy_view') . '/jcarousel_skins/aef_easy_view_two_items/aef_easy_view_two_items.css');
+
+  drupal_add_css(drupal_get_path('module', 'aef_easy_view') . '/aef_easy_view.css');
+}
+
+/**
+ * Implementation of hook_menu()
+ */
+function aef_easy_view_menu() {
+
+  $items['aef_easy_view/ahah'] = array(
+    'title' => 'Aef easy view save creation form',
+    'page callback' => 'aef_easy_view_ahah',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK  
+  );
+
+  $items['aef_easy_view/preview'] = array(
+    'page callback' => 'aef_easy_view_preview',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['aef_easy_view/noderef_autocomplete'] = array(
+    'page callback' => 'aef_easy_view_noderef_autocomplete',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+
+	return $items;
+}
+
+/**
+ * Implementation of hook_views_api
+ */
+function aef_easy_view_views_api() {
+  return array(
+    'api' => 2,
+    'path' => drupal_get_path('module', 'aef_easy_view') .'/views',
+  );
+}
+
+/**
+ * Implementation of hook_theme()
+ */
+function aef_easy_view_theme()
+{
+  return array(
+    'aef_easy_view_creator' => array(
+      'arguments' => array('element' => NULL),
+    ),
+    'aef_easy_view_formatter_default' => array(
+      'arguments' => array('element' => NULL),
+    ),
+    'aef_easy_view_default' => array(
+      'arguments' => array('viid' => 0),
+    ),
+    'aef_easy_view_results' => array(
+      'arguments' => array('element' => NULL),
+    ),
+  );
+}
+
+
+/**
+ * Get the list of easy views provided by other modules.
+ * The hook return value must have the following structure:
+ * array(
+ *  'easy_view_key' => array(
+ *    'key' => '', //The internal name for this easyview
+ *    'title' => '', // The title of this easyview
+ *    'view_name' => '', //The name of the view to use
+ *    (optional) 'view_handler_name' => '', //The id of the view handler to use (e.g. page_1)
+ *    (optional) 'view_handler_rss_name' => '', //The id of the rss view handler to use (e.g. feed)
+ *    'element_name' => '', //The FAPI element name to use for the settings (e.g. my_easy_view_settings)
+ *    'form_submit' => '', // A function that, given the form values, will return an array containing
+ *                         // the parameter args to give to the view ('view_params' key), 
+ *                         // optionally the args for the RSS feed ('feed_view_params' key),
+ *                         // and its data to store ('form_data' key)
+ *    )
+ *  )
+ */
+function aef_easy_view_get_easy_views() {
+  static $easy_views = array();
+
+  if(count($easy_views) == 0)
+  {
+    //Load all the .easy_views.inc files provided by modules.
+    foreach (module_list() as $module) {
+      $module_path = drupal_get_path('module', $module);
+      if (file_exists("$module_path/$module.easy_views.inc")) {
+        require_once "$module_path/$module.easy_views.inc";
+      }
+    }
+    //Fetch the easy views data from external modules.
+    $easy_views = module_invoke_all('easy_view');
+  }
+
+  return $easy_views;
+}
+
+/**
+ * Load an easy view record
+ */
+function aef_easy_view_load_record($viid)
+{
+  static $records = array();
+
+  if(isset($records[$viid]) == false)
+  {
+    $record = db_fetch_array(db_query('SELECT * FROM {aef_easy_view_views} WHERE viid=%d', $viid));
+    $record['data'] = unserialize($record['data']);
+    $records[$viid] = $record;
+  }
+  
+
+  return $records[$viid];
+}
+
+/**
+ * AHAH callback when refreshing the whole widget.
+ */
+function aef_easy_view_ahah($type_name, $field_id, $delta)
+{
+
+  // Retrieve the cached form.
+  $form_state = array('submitted' => FALSE);
+  $form_build_id = $_POST['form_build_id'];
+  $form = form_get_cache($form_build_id, $form_state);
+  if (!$form) {
+    // Invalid form_build_id.
+    drupal_json(array('data' => ''));
+    exit;
+  }
+
+  // Build the new form against the incoming $_POST values so that we can render the new element.
+  $form_state = array('submitted' => FALSE);
+  $form += array(
+    '#post' => $_POST,
+    '#programmed' => FALSE,
+  );
+
+  //Prepare the content to render
+  $form = form_builder($_POST['form_id'], $form, $form_state); 
+
+  if(module_exists('fieldgroup'))
+    $group_name = _fieldgroup_field_get_group($type_name, $field_id);
+  $field_form = (!empty($group_name)) ? $form[$group_name][$field_id][$delta] : $form[$field_id][$delta];
+
+  // Prevent duplicate wrapper.
+  unset($field_form['#prefix'], $field_form['#suffix']);
+
+  //Render the output
+  $output = drupal_render($field_form);
+
+  //Update the Drupal.settings (for the AHAH behaviors)
+  $javascript = drupal_add_js(NULL, NULL);
+  $output_js = isset($javascript['setting']) ? '<script type="text/javascript">jQuery.extend(Drupal.settings, '. drupal_to_js(call_user_func_array('array_merge_recursive', $javascript['setting'])) .');</script>' : '';
+
+  //Render the new output
+  $output =  $output_js . theme('status_messages') . $output;
+  print drupal_to_js(array('status' => TRUE, 'data' => print_r($output, TRUE)));
+  exit;
+}
+
+/**
+ * External interface to load an easy view results.
+ * For a given viid, return the list of results.
+ */
+function aef_easy_view_results($viid, $number_of_entries = 10)
+{
+  $results = array();
+  $easy_views = aef_easy_view_get_easy_views();
+  $easy_view_instance = aef_easy_view_load_record($viid);
+
+  if(is_array($easy_view_instance))
+  {
+    //Manual list
+    if(is_array($easy_view_instance['data']['manual_list_items']))
+    {
+      $results = array_splice($easy_view_instance['data']['manual_list_items'], 0, $number_of_entries);
+    }
+    //Semi auto list
+    else if(is_array($easy_view_instance['data']['semi_automatic_list_items']['items']))
+    {
+      $data = _aef_easy_view_semi_automatic_results($easy_view_instance);
+      $nids = array();
+      foreach($data as $node_infos)
+        $nids[] = $node_infos['nid'];
+
+      $results = array_splice($nids, 0, $number_of_entries);
+    }
+    //Auto list
+    else
+    {
+      $data = aef_easy_view_auto_results($easy_view_instance, $number_of_entries);
+      foreach($data as $node)
+        $results[] = $node->nid;
+    }
+  }
+
+  return $results;
+}
+
+/**
+ * Theme the easy view.
+ */
+function theme_aef_easy_view_default($viid, $cck_formatter, $number_of_entries, $number_of_entries_per_page, $read_more_text, $read_more_link)
+{
+  $output = "";
+
+  $easy_views = aef_easy_view_get_easy_views();
+  $easy_view_instance = aef_easy_view_load_record($viid);
+
+  if(is_array($easy_view_instance))
+  {
+    $easy_view = $easy_views[$easy_view_instance['easy_view_name']];
+    if(is_array($easy_view_instance['data']['manual_list_items']))
+    {
+      //Manual list
+      $output = aef_easy_view_display_view('aef_easy_view_plain', 
+        implode('+', array_splice($easy_view_instance['data']['manual_list_items'], 0, $number_of_entries)), 
+        $cck_formatter, $number_of_entries, $number_of_entries_per_page, $read_more_text, $read_more_link);
+    }
+    else if(is_array($easy_view_instance['data']['semi_automatic_list_items']['items']))
+    {
+      //Semi automatic list
+      $results = _aef_easy_view_semi_automatic_results($easy_view_instance);
+      $nids = array();
+      foreach($results as $node_infos)
+        $nids[] = $node_infos['nid'];
+
+      $output = aef_easy_view_display_view('aef_easy_view_plain', 
+        implode('+', array_splice($nids, 0, $number_of_entries)), 
+        $cck_formatter, $number_of_entries, $number_of_entries_per_page, $read_more_text, $read_more_link);
+    }
+    else
+    {
+      //Automatic list
+      $output = aef_easy_view_display_view($easy_view, $easy_view_instance['data']['view_params'], 
+        $cck_formatter, $number_of_entries, $number_of_entries_per_page, $read_more_text, $read_more_link);
+    }
+  }
+
+  return $output;
+}
+
+/**
+ * Given an easy view, and its instance parameters (view parameters, formatter, number of entries),
+ * display the view.
+ * @arg view A view name, or an easy view.
+ */
+function aef_easy_view_display_view($view, $view_params = "", $formatter = "default", $number_of_entries = 10, $number_of_entries_per_page = 0, $read_more_text = null, $read_more_link = null)
+{
+  $output = "";
+
+  if(is_array($view))
+  {
+    $view_name = $view['view_name'];
+    $view_handler_name = $view['view_name'];
+  }
+  else
+  {
+    $view_name = $view;
+    $view_handler_name = 'default';
+  }
+
+  if($view_name != "")
+  {
+    $view = views_get_view($view_name);
+    
+    if ($view != null) {
+
+      $view->init_display();
+      $view->display_handler->set_option('use_pager', false);
+      $view->display_handler->set_option('row_plugin', 'node_cck_formatter');
+      $view->display_handler->set_option('row_options', array('cck_formatter' => $formatter));
+      $view->display_handler->set_option('items_per_page', $number_of_entries);
+
+      //If a number of entries per page was selected, use JCarousel
+      if($number_of_entries_per_page > 0)
+      {
+        $view->display_handler->set_option('style_plugin', 'aef_jcarousel_views');
+
+        if($number_of_entries_per_page == 1)
+          $jcarousel_skin_path = drupal_get_path('module', 'aef_easy_view') . 
+            '/jcarousel_skins/aef_easy_view_one_item/aef_easy_view_one_item.css';
+        else if($number_of_entries_per_page == 2)
+          $jcarousel_skin_path = drupal_get_path('module', 'aef_easy_view') . 
+            '/jcarousel_skins/aef_easy_view_two_items/aef_easy_view_two_items.css';
+        else
+          $jcarousel_skin_path = drupal_get_path('module', 'aef_easy_view') . 
+            '/jcarousel_skins/aef_easy_view_default/aef_easy_view_default.css';
+
+        $view->display_handler->set_option('style_options', array(
+          'scroll' => $number_of_entries_per_page, 
+   //       'visible' => $number_of_entries_per_page, 
+          'skin' => 'custom', 
+          'skin_path' => $jcarousel_skin_path,
+        ));
+      }
+
+      $args = explode('/', $view_params);
+      $handler = $view_handler_name?$view_handler_name:'default';
+      $output = $view->preview($handler, $args);
+
+
+      //If the read more link was given, add it.
+      if($read_more_text)
+      {
+        if(trim($read_more_link) == "" && $view_name != "aef_easy_view_plain")
+        {
+          $view->set_display($handler);
+          $path = $view->get_path();
+          $read_more_link = str_replace(array('%'), $args, $path);
+        }
+
+        if($read_more_link)
+        {
+          $output .= '<div class="aef-easy-view-readmore">' .
+            l($read_more_text, $read_more_link) . 
+            '</div>';
+        }
+      }
+
+      //Add a wrapper
+      $output = '<div class="aef-easy-view">' . $output . '</div>';
+
+    }
+  }
+
+  return $output;
+}
+
+/**
+ * For a given easy_view instance, return the result of the automatic view in an array
+ */
+function aef_easy_view_auto_results($easy_view_instance, $nb_entries = 10)
+{
+  if($easy_view_instance['easy_view_name'] == "")
+    return array();
+
+  $result = array();
+
+  $easy_views = aef_easy_view_get_easy_views();
+  $selected_easy_view = $easy_views[$easy_view_instance['easy_view_name']];
+
+  $view = views_get_view($selected_easy_view['view_name']);
+
+  if ($view != null) {
+    $view_params = $easy_view_instance['data']['view_params'];
+    $args = explode('/', $view_params);
+    $view->set_arguments($args);
+
+    $view->init_display();
+    $view->display_handler->set_option('items_per_page', $nb_entries);
+    $view->pre_execute();
+    $view->execute();
+
+    //View pre_render hook, sometimes used by modules to modify results before output.
+    //We call it directly here, since we don't want to call render for nothing!!!
+    // Let modules modify the view just prior to executing it.
+    foreach (module_implements('views_pre_render') as $module) {
+      $function = $module . '_views_pre_render';
+      $function($view);
+    }
+
+    foreach($view->result as $delta => $item)
+    {
+      $result[] = $item;
+    }
+  }
+
+  return $result;
+}
+
+/**
+ * For a given semi automatic easy_view instance, return the result in an array, and
+ * save the results.
+ */
+function _aef_easy_view_semi_automatic_results($easy_view_instance)
+{
+  if($easy_view_instance['easy_view_name'] == "" || 
+    is_array($easy_view_instance['data']['semi_automatic_list_items']) == false)
+    return array();
+
+  $results = array();
+
+  $auto_results = aef_easy_view_auto_results($easy_view_instance, 30);
+
+  //Convert the automatic list results into the same format than the semi auto
+  $conv_auto_results = array();
+  foreach($auto_results as $auto_result)
+  {
+    $conv_auto_results[] = array('nid' => $auto_result->nid, 'fixed' => false);
+  }
+
+
+
+  if($conv_auto_results[0]['nid'] == $easy_view_instance['data']['semi_automatic_list_items']['last_fetched_nid'] || count($conv_auto_results) == 0)
+  {
+    //No new node since last time (or error). Great (or not)!
+  }
+  else
+  {
+    //The first node of the automatic results is not matching the last nid we saved: There is new content.
+    //Update our list, and save it
+
+    $new_nodes = array();
+    foreach($conv_auto_results as $auto_result)
+    {
+      if($auto_result['nid'] == $easy_view_instance['data']['semi_automatic_list_items']['last_fetched_nid'])
+        break;
+
+      $new_nodes[] = $auto_result;
+    }
+
+    //Add this new node on the list
+    array_splice($easy_view_instance['data']['semi_automatic_list_items']['items'], 0, 0, $new_nodes);
+
+    //For each node that was marked as "fixed", move them towards the top the number of times we added a node
+    $fixed_deltas = array();
+    for($i = 0; $i < count($easy_view_instance['data']['semi_automatic_list_items']['items']); $i++)
+    {
+      if($easy_view_instance['data']['semi_automatic_list_items']['items'][$i]['fixed'])
+        $fixed_deltas[] = $i;
+    }
+    foreach($fixed_deltas as $fixed_delta)
+    {
+      $fixed_element = array_splice(
+        $easy_view_instance['data']['semi_automatic_list_items']['items'], $fixed_delta, 1, array());
+      array_splice($easy_view_instance['data']['semi_automatic_list_items']['items'], 
+        $fixed_delta - count($new_nodes), 0, $fixed_element);
+    }
+
+    //Put the new last fetched nid
+    $easy_view_instance['data']['semi_automatic_list_items']['last_fetched_nid'] = $conv_auto_results[0]['nid'];
+
+    //Put no more than 20 elements.
+    $easy_view_instance['data']['semi_automatic_list_items']['items'] = 
+      array_slice($easy_view_instance['data']['semi_automatic_list_items']['items'], 0, 20);
+    
+    //Save the new list
+    drupal_write_record('aef_easy_view_views', $easy_view_instance, 'viid');
+  }
+
+  $results = $easy_view_instance['data']['semi_automatic_list_items']['items'];
+
+  //Let's look at the results, and remove any node that is no more on the view, e.g. an unpublished node
+  //=> In fact, no. If we reorder stuff, we don't want it to dissapear because of a time filter.
+  //Probably be a setting later.
+  /**foreach($results as $key => $result)
+  {
+    $found = false;
+    foreach($auto_results as $auto_result)
+    {
+      if($auto_result->nid == $result['nid'])
+        $found = true;
+    }
+
+    if($found == false)
+      unset($results[$key]);
+  }*/
+
+  return $results;
+}
+
+/**
+ * Get the URL of the feed of the easy view, if any.
+ */
+function aef_easy_view_get_feed_url($viid)
+{
+  $url = null;
+
+  $easy_views = aef_easy_view_get_easy_views();
+  $easy_view_instance = aef_easy_view_load_record($viid);
+
+  if(is_array($easy_view_instance))
+  {
+    $easy_view = $easy_views[$easy_view_instance['easy_view_name']];
+    $params = $easy_view_instance['data']['feed_view_params'];
+    if(trim($params) == "")
+      $params = $easy_view_instance['data']['view_params'];
+    $url = _aef_easy_view_get_feed_url($easy_view, $params);
+  }
+
+  return $url;
+}
+
+/**
+ * Get the URL of the feed of the easy view, if any.
+ */
+function _aef_easy_view_get_feed_url($easy_view, $view_params = "")
+{
+  $url = null;
+
+  if($easy_view['view_name'] != "" && $easy_view['view_handler_rss_name'] != "")
+  {
+    $view = views_get_view($easy_view['view_name']);
+    
+    if ($view != null) {
+
+      $view->init_display();
+
+      $args = explode('/', $view_params);
+      $view->set_display($easy_view['view_handler_rss_name']);
+      $url = $view->get_url($args);
+    }
+  }
+
+  return $url;
+}
+
+/**
+ * Implementation of hook_views_pre_render()
+ */
+function aef_easy_view_views_pre_render(&$view)
+{
+  if($view->name == "aef_easy_view_plain" && $view->current_display == "default")
+  {
+    //For our plain node display for manual list, reorder the nodes as given in the argument
+    //Well, this view is not really useful. It's just made so that the output is the same.
+    //TODO: I could probably go dig to call view theme functions directly...
+    $new_result = array();
+    $items = explode('+', $view->args[0]);
+    foreach($items as $nid)
+    {
+      $node = null;
+      $node->nid = $nid;
+      $new_result[] = $node;
+    }
+    $view->result = $new_result;
+  }
+}
+
+/**
+ * Implementation of hook_jcarousel_themes()
+ */
+function aef_easy_view_jcarousel_themes() {
+  return array(
+    'aef_easy_view_default' => array(
+      'name' => t('Easy view carousel, 3 per page'),
+      'css file' => drupal_get_path('module', 'aef_easy_view') . 
+            '/jcarousel_skins/aef_easy_view_default/aef_easy_view_default.css',
+      'minimum width' => 410,
+    ),
+    'aef_easy_view_two_items' => array(
+      'name' => t('Easy view carousel, 2 per page'),
+      'css file' => drupal_get_path('module', 'aef_easy_view') . 
+            '/jcarousel_skins/aef_easy_view_two_items/aef_easy_view_two_items.css',
+      'minimum width' => 292,
+    ),
+    'aef_easy_view_one_item' => array(
+      'name' => t('Easy view carousel, 1 per page'),
+      'css file' => drupal_get_path('module', 'aef_easy_view') . 
+            '/jcarousel_skins/aef_easy_view_one_item/aef_easy_view_one_item.css',
+      'minimum width' => 200,
+    ),
+  );
+}
+
+/**
+ * Return the currently used jcarousel theme used, if any.
+ * That is temporary and should be removed once we stored the jcarousel theme instead of the nb of elts
+ * per page in the database.
+ */
+function aef_easy_view_get_used_jcarousel_theme($field)
+{
+  $result = null;
+
+  if($field['numberofnodesperpage'] == 1)
+    return 'aef_easy_view_one_item';
+  else if($field['numberofnodesperpage'] == 3)
+    return 'aef_easy_view_default';
+}
+
+/**
+ * Retrieve a select list of nodereference formatter options without suitability callback (excluding the multiple ones)
+ */
+function _aef_easy_view_formatter_options() {
+  $field_types = _content_field_types();
+  $field_type = $field_types['nodereference'];
+
+  foreach ($field_type['formatters'] as $formatter_name => $formatter_info) {
+    // If the formatter provide a suitability callback then it is not the formatter that will work with all fields
+    if ($formatter_info["suitability callback"] != "") {
+      continue;
+    }
+
+    //If it is a multiple value formatter, skip it
+    if (content_handle('formatter', 'multiple values', $formatter_info) != CONTENT_HANDLE_CORE) {
+      continue;
+    }
+
+    $formatter_options[$formatter_name] = $formatter_info['label'];
+  }
+
+  return $formatter_options;
+}
+
+

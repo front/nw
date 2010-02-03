@@ -1,0 +1,52 @@
+.aef_easy_view_wrapper {
+  margin-bottom:1em;
+}
+
+.aef-easy-view-results-table {
+  width:100%;
+}
+
+.aef-easy-view-view-settings,
+.aef-easy-view-view-infos {
+  border:1px solid #CCCCCC;
+  background-color: #EEEEEE;
+  padding:4px;
+  margin-bottom:5px;
+}
+
+.aef_easy_view_viid_viewer_viid_title {
+  font-weight:bold;
+  padding-bottom:5px;
+}
+
+.aef_easy_view_viid_viewer_viid_title_type_auto,
+.aef_easy_view_viid_viewer_viid_title_type_man,
+.aef_easy_view_viid_viewer_viid_title_type_semauto {
+  font-size:11px;
+}
+
+.aef_easy_view_viid_viewer_viid_title_type_auto {
+  font-weight:normal;
+}
+
+.aef-easy-view-preview .aef-easy-view-close {
+  text-align:center;
+  font-size:10px;
+}
+
+
+.aef_easy_view_wrapper .progress-disabled {
+  float: none;
+  display: inline;
+}
+
+.aef_easy_view_wrapper label {
+  font-weight:bold;
+}
+
+
+
+.aef-easy-view .aef-easy-view-readmore {
+  font-size:12px;
+  text-align:left;
+}

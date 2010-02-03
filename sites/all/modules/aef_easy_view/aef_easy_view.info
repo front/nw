@@ -1,0 +1,20 @@
+; $Id: aef_easy_view.info,v 1.1 2009/11/16 11:09:38 ndeschildre Exp $
+name = "AEF Easy View"
+description = "An easy interface to Views."
+version = "6.x-1.0"
+package = AEF
+core = 6.x
+
+dependencies[] = content
+dependencies[] = nodereference
+
+dependencies[] = aef_views_cck_formatter
+dependencies[] = aef_jcarousel_views
+dependencies[] = aef_utilities
+
+; Information added by drupal.org packaging script on 2009-12-14
+version = "6.x-1.1"
+core = "6.x"
+project = "aef_easy_view"
+datestamp = "1260783008"
+
