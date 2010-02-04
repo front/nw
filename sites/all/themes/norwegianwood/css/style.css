@@ -1,83 +1,100 @@
-/* ------- Quciktabs (default = "no style") -------*/
-.quicktabs_wrapper {
+
+/** Font styles 
+---------------------------------*/
+
+body {
+  margin: 0;
+  /*
+   * Setting up font size, leading and font family
+   * http://www.markboulton.co.uk/journal/comments/five-simple-steps-to-better-typography
+   */
+  font: 13px/1.5em "Helvetica Neue", helvetica, Arial, sans-serif;
+  letter-spacing:0.03em;
 }
 
-ul.quicktabs-style-nostyle {
-font-size: 13px;
-font-weight: bold;
-border-bottom: 1px solid #ccc;
-overflow: auto;
+/* Links */
+
+a:link, a:visited {
+  color: blue;
+  text-decoration: none;
 }
 
-ul.quicktabs-style-nostyle li {
-padding: 6px 16px;
-margin-right: 4px;
-background: url(./images/grey-grad-bg.png) 0 0 repeat-x;
--moz-border-radius-topleft: 2px;
--moz-border-radius-topright: 2px;
-display: block;
-float: left;
+a:hover, a:active {
+  color: red;
+  text-decoration: underline;
 }
 
-ul.quicktabs-style-nostyle a:link, ul.quicktabs-style-nostyle a:visited {
-color: #25385E;
+/* Titles  */
+
+h1, h2, h3, h4, h5, h6 {line-height:1.3em;}
+
+h1 {
+	font-size: 2.2em;
+	font-weight:300;
+	padding: 0 0 0.5em;
+	margin: 0;
 }
 
-ul.quicktabs-style-nostyle li.active, ul.quicktabs-style-nostyle li:hover {
-background: url(./images/nav.png) -10px -10px no-repeat;
+h2 {font-size:1.8em;font-weight:300;margin-bottom:0.75em;}
+h3 {font-size:1.4em;margin-bottom:1em;}
+h4 {font-size:1.2em;margin-bottom:0.8em;}
+h5 {font-size:1.1em;font-weight:600;margin-bottom:0;}
+h6 {font-size:1em;font-weight:bold;}
+
+/* Paragraph Styles */
+
+p {
+  margin:0 0 1em 0;
 }
 
-ul.quicktabs-style-nostyle li.active a, ul.quicktabs-style-nostyle li:hover a{
-color: #fff;
+/* List Styles  */
+
+ul, ol {
+  margin-left: 0;
+  padding-left: 2em;
 }
 
-/**/
-
-/* ------- Tables ------ */
+/* Table Styles  */
 
 table {
-width:100%;
-border-top:1px solid #e5eff8;
-border-right:1px solid #e5eff8;
-margin:1em auto;
-border-collapse:collapse;
+	width: 99%;
+}
+tr.even td, tr.odd td {
+	padding: 10px 5px;
+}
+tr.odd {
+	background-color: #fff;
 }
 
-th {
-background:#F4F9FE none repeat scroll 0 0;
-font-size-adjust:none;
-font-stretch:normal;
-font-style:normal;
-font-variant:normal;
-font-weight:bold;
-line-height:2em;
-text-align:left;
-border-bottom: none;
+/* Code */
+
+pre, code, tt {font:1em 'andale mono', 'lucida console', monospace;line-height:1.5;}
+
+pre {
+	background-color: #efefef;
+	display: block;
+	padding: 5px;
+	margin: 5px 0;
+	border: 1px solid #aaa;
 }
 
-thead tr {
-border-left: 1px solid #e5eff8;
-}
+/* List Styles */
 
-td {
-border-bottom:1px solid #e5eff8;
-border-left:1px solid #e5eff8;
-padding:.3em 1em;
-text-align:left;
-}
+ul          { list-style-type: disc; }
+ul ul       { list-style-type: circle; }
+ul ul ul    { list-style-type: square; }
+ul ul ul ul { list-style-type: circle; }
+ol          { list-style-type: decimal; }
+ol ol       { list-style-type: lower-alpha; }
+ol ol ol    { list-style-type: decimal; }
 
-tbody {
-border-top: 1px solid #e5eff8;
-}
+/* Abbreviation */
 
-tr.odd td {
-background:#fff;
+abbr {
+  border-bottom: 1px dotted #666;
+  cursor: help;
+  white-space: nowrap;
 }
-
-tr.even td {
-background:#f9fcfe;
-}
-/**/
 
 /* UI improvments  */
 
@@ -123,3 +140,12 @@ div.status {
   background: #cf8;
   border-color: #be7;
 }
+
+/** Region Colors
+---------------------------------
+*  delete when starting a new theme */
+
+#header, #footer { background-color: #efefef; }
+#sidebar-first {	background: #e7edff; }
+#sidebar-second { background: #ffd075; }
+#navigation { background-color: #feffa5; }

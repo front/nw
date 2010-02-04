@@ -1,8 +1,9 @@
-name = Norwegian Wood
-description = NW theme for Drupal 6
+name = norwegianwood
+description = norwegianwood theme for Drupal 6
 screenshot = css/images/screenshot.gif
-core = "6.x"
 engine = phptemplate
+core = 6.x
+base theme = ninesixty
 
 regions[left]           = first sidebar
 regions[right]          = second sidebar
@@ -32,7 +33,6 @@ stylesheets[all][] = css/ie6.css
 stylesheets[all][] = css/ie7.css
 stylesheets[all][] = css/tabs.css
 stylesheets[all][] = css/typography.css
-stylesheets[all][] = css/layout.css
 stylesheets[print][] = css/print.css
 
 scripts[]   = js/css_browser_selector.js
@@ -41,5 +41,4 @@ settings[basic_zen_tabs]             = 1
 settings[basic_wireframe]            = 0
 settings[basic_block_editing]        = 1
 settings[basic_rebuild_registry]     = 0
-
 
