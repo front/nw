@@ -1,5 +1,5 @@
 <?php
-// $Id: ds.display.inc,v 1.1.2.30 2010/01/28 00:04:40 swentel Exp $
+// $Id: ds.display.inc,v 1.1.2.34 2010/02/03 08:33:04 swentel Exp $
 
 /**
  * @file
@@ -28,9 +28,21 @@ function ds_layout_overview() {
         $type = $type_name;
         $type_url_str = str_replace('_', '-', $type_name);
 
+        // Global exclude.
+        if (variable_get($module .'_type_'. $type, FALSE)) {
+          continue;
+        }
+
+        $exclude_build_modes = variable_get($module .'_buildmodes_exclude', array());
+
         if (!empty($build_modes)) {
           $rows[] = array(array('data' => $otype->name, 'colspan' => '3', 'class' => 'ds-row-title'));
           foreach ($build_modes as $bkey => $build_mode) {
+
+            $excluded = (isset($exclude_build_modes[$type_name][$bkey]) && $exclude_build_modes[$type_name][$bkey] == TRUE) ? TRUE : FALSE;
+            if ($excluded) {
+              continue;
+            }
 
             // Settings en status.
             $display_settings = variable_get($module .'_display_settings_'. $type, array());
@@ -42,7 +54,7 @@ function ds_layout_overview() {
 
             $operations = l('Edit', 'admin/ds/layout/'. $type .'/'. $bkey);
             if (user_access('revert overridden settings') && $settings_status == DS_SETTINGS_OVERRIDDEN) {
-              $operations .= ' - '.l('Revert', 'admin/ds/tools/revert/'.$module .'/'. $type .'/'. $bkey);
+              $operations .= ' - '. l('Revert', 'admin/ds/tools/revert/'. $module .'/'. $type .'/'. $bkey);
             }
             $row[] = $operations;
             $rows[] = array('data' => $row, 'class' => 'ds-row-type');
@@ -113,43 +125,21 @@ function ds_display_overview_form(&$form_state, $type, $build_mode = 'full', $mo
     }
   }
 
-  // Exclude build mode.
-  $exclude_build_modes = variable_get($module .'_buildmodes_exclude', array());
-  $excluded = ((isset($exclude_build_modes[$type][$build_mode])
-    && $exclude_build_modes[$type][$build_mode] == TRUE) ||
-    variable_get($module .'_type_'. $type, FALSE) == TRUE) ? TRUE : FALSE;
-  $form['exclude_build_mode'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Exclude this build mode from rendering.'),
-    '#default_value' => $excluded,
-    '#attributes' => array('onClick' => 'toggleFieldOverviewForm()'),
+  // Add the fields.
+  ds_fields_display_form($form, $display_settings);
+
+  // Plugins.
+  $plugins = TRUE;
+  if (isset($api_info['plugins_exclude']) && in_array($build_mode, $api_info['plugins_exclude'])) {
+    $plugins = FALSE;
+  }
+  if ($plugins)
+  ds_plugins_display_form($form, $display_settings);
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
   );
-
-  $global_exclude = variable_get($module .'_type_'. $type, FALSE);
-  $form['exclude_build_mode']['#disabled'] = $global_exclude;
-  if ($global_exclude == TRUE) {
-    $description = t('The checkbox has been disabled because the complete type has been excluded from rendering.') .'<br />';
-    $form['exclude_build_mode']['#description'] = $description .' '. $form['exclude_build_mode']['#description'];
-  }
-
-  // If global exclude is true, no point in rendering.
-  if ($global_exclude == FALSE) {
-    // Add the fields.
-    ds_fields_display_form($form, $display_settings);
-
-    // Plugins.
-    $plugins = TRUE;
-    if (isset($api_info['plugins_exclude']) && in_array($build_mode, $api_info['plugins_exclude'])) {
-      $plugins = FALSE;
-    }
-    if ($plugins)
-    ds_plugins_display_form($form, $display_settings);
-
-    $form['submit'] = array(
-      '#type' => 'submit',
-      '#value' => t('Save'),
-    );
-  }
 
   return $form;
 }
@@ -193,7 +183,7 @@ function ds_fields_display_form(&$form, $display_settings) {
       '#default_value' => $label_value,
     );
     $form[$field][$build_mode]['label_edit']['#value'] = l(t('Edit'), $base_url . request_uri(), array(
-      'attributes' => array('onclick' => 'javascript: Drupal.DisplaySuite.changeLabel(this, "' . $label_value. '"); return false;')
+      'attributes' => array('onclick' => 'javascript: Drupal.DisplaySuite.changeLabel(this, "'. $label_value .'"); return false;')
     ));
 
     $form[$field]['human_name']['#value'] = !empty($label_value) ? $label_value : $value['title'];
@@ -202,10 +192,10 @@ function ds_fields_display_form(&$form, $display_settings) {
 
     $form[$field]['ds_weight']['#default_value'] = ds_default_value($display_settings, $build_mode, 'fields', $field, 'weight', DS_DEFAULT_WEIGHT);
 
-    $form[$field][$build_mode]['format']['#options'] = isset($value['formatters']) ? $value['formatters'] : array();
+    $form[$field][$build_mode]['format']['#options'] = isset($value['properties']['formatters']) ? $value['properties']['formatters'] : array();
     $format = ds_default_value($display_settings, $build_mode, 'fields', $field, 'format', '');
-    if (empty($format) && isset($value['formatters'])) {
-      $format = key($value['formatters']);
+    if (empty($format) && isset($value['properties']['formatters'])) {
+      $format = key($value['properties']['formatters']);
     }
     $form[$field][$build_mode]['format']['#default_value'] = $format;
     $form[$field][$build_mode]['format']['#access'] = (count($form[$field][$build_mode]['format']['#options']) == 0) ? FALSE : TRUE;
@@ -249,12 +239,6 @@ function ds_display_overview_form_submit($form, &$form_state) {
   $type = $form['#type_name'];
   $extra = $form['#extra'];
 
-  // Exclude build mode checkbox.
-  $exclude_build_mode = $form_state['values']['exclude_build_mode'];
-  $exclude_build_modes = variable_get($module .'_buildmodes_exclude', array());
-  $exclude_build_modes[$type][$build_mode] = $exclude_build_mode;
-  variable_set($module .'_buildmodes_exclude', $exclude_build_modes);
-
   $display_settings = variable_get($module .'_display_settings_'. $type, array());
   unset($display_settings[$build_mode]);
 
@@ -266,7 +250,7 @@ function ds_display_overview_form_submit($form, &$form_state) {
       $display_settings[$build_mode]['fields'][$key]['format'] = $form_state['values'][$key][$build_mode]['format'];
       $display_settings[$build_mode]['fields'][$key]['region'] = $form_state['values'][$key][$build_mode]['region'];
       if (!empty($form_state['values'][$key][$build_mode]['label_value'])) {
-      $display_settings[$build_mode]['fields'][$key]['label_value'] = $form_state['values'][$key][$build_mode]['label_value'];
+        $display_settings[$build_mode]['fields'][$key]['label_value'] = $form_state['values'][$key][$build_mode]['label_value'];
       }
       $display_settings[$build_mode]['fields'][$key]['labelformat'] = $form_state['values'][$key][$build_mode]['label']['format'];
 

@@ -28,17 +28,6 @@
           </a>
         <?php endif; ?>
 
-        <div id="name-and-slogan">
-          <?php if (!empty($site_name)): ?>
-            <h1 id="site-name">
-              <a href="<?php print $front_page ?>" title="<?php print t('Home'); ?>" rel="home"><span><?php print $site_name; ?></span></a>
-            </h1>
-          <?php endif; ?>
-          <?php if (!empty($site_slogan)): ?>
-            <div id="site-slogan"><?php print $site_slogan; ?></div>
-          <?php endif; ?>
-        </div> <!-- /name-and-slogan -->
-
       </div> <!-- /logo-title -->
 
       <?php if ($header): ?>
@@ -46,8 +35,6 @@
           <?php print $header; ?>
         </div>
       <?php endif; ?>
-
-      <?php print $search_box; ?>
 
     </div> <!-- /header -->
 
@@ -103,13 +90,6 @@
           </div>
         </div> <!-- /content-inner /content -->
 
-        <?php if (!empty($primary_links) or !empty($secondary_links)): ?>
-          <div id="navigation" class="menu <?php if (!empty($primary_links)) { print "with-main-menu"; } if (!empty($secondary_links)) { print " with-sub-menu"; } ?>">
-            <?php if (!empty($primary_links)){ print theme('links', $primary_links, array('id' => 'primary', 'class' => 'links main-menu')); } ?>
-            <?php if (!empty($secondary_links)){ print theme('links', $secondary_links, array('id' => 'secondary', 'class' => 'links sub-menu')); } ?>
-          </div> <!-- /navigation -->
-        <?php endif; ?>
-
         <?php if ($left): ?>
           <div id="sidebar-first" class="column sidebar first">
             <div id="sidebar-first-inner" class="inner">
@@ -130,12 +110,11 @@
 
       <!-- ______________________ FOOTER _______________________ -->
 
-      <?php if(!empty($footer_message) || !empty($footer_block)): ?>
         <div id="footer">
+          <?php print $search_box; ?>
           <?php print $footer_message; ?>
-          <?php print $footer_block; ?>
+          <?php print $footer; ?>
         </div> <!-- /footer -->
-      <?php endif; ?>
 
     </div> <!-- /page -->
     <?php print $closure; ?>

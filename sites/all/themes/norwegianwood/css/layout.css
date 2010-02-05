@@ -12,7 +12,7 @@
 */
 
 #page {
-	width: 960px; /* edit to change the width of the page */
+	width: 1024px; /* edit to change the width of the page */
 	margin: 0 auto; /* remove 'auto' and the width to switch to a fluid width */
 }
 
@@ -55,18 +55,18 @@
 
 .two-sidebars .center,
 .sidebar-left .center {
-  margin-left: 190px;     /* LEFT value */
+  margin-left: 260px;     /* LEFT value */
 }
 #sidebar-first {
-  width: 190px;           /* LEFT value */
+  width: 260px;           /* LEFT value */
 	margin-right: -190px;    /* negative LEFT value */
 }
 .two-sidebars .center,
 .sidebar-right .center {
-  margin-right: 200px;    /* RIGHT value */
+  margin-right: 260px;    /* RIGHT value */
 }
 #sidebar-second {
-  width: 200px;           /* RIGHT value */
+  width: 260px;           /* RIGHT value */
 }
 
 /** Columns inner
@@ -76,7 +76,7 @@
 */
 
 .inner {
-	padding: 0px;
+	padding: 9px;
 }
 
 /** Navigation styles

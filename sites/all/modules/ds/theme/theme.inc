@@ -1,5 +1,5 @@
 <?php
-// $Id: theme.inc,v 1.1.2.14 2010/01/28 00:04:40 swentel Exp $
+// $Id: theme.inc,v 1.1.2.22 2010/02/03 13:15:50 swentel Exp $
 
 /**
  * @file
@@ -39,17 +39,76 @@ function theme_ds_field($content, $field_key, $field) {
 }
 
 /**
+ * Evaluate custom code.
+ *
+ * @param array $field The field with all its properties.
+ */
+function theme_ds_eval_code($field) {
+  if (isset($field['properties']['code'])) {
+    $value = ds_eval($field['properties']['code'], $field['object']);
+    // Token support - check on token property so we don't run every single field through token.
+    if (module_exists('token') && isset($field['properties']['token']) && $field['properties']['token'] == TRUE) {
+      $value = token_replace($value, $field['object_type'], $field['object']);
+    }
+    return $value;
+  }
+}
+
+/**
+ * Evaluate block field.
+ *
+ * @param array $field The field array.
+ */
+function theme_ds_eval_block($field) {
+  if (isset($field['properties'])) {
+    list($module, $delta) = explode('|', $field['properties']['block']);
+    $block = module_invoke($module, 'block', 'view', $delta);
+    if (!empty($block)) {
+      switch ($field['properties']['render']) {
+        case DS_BLOCK_TEMPLATE:
+          global $theme_key;
+          $block = (object) $block;
+          $block->region = NULL;
+          $block->module = $module;
+          $block->delta = $delta;
+          $block_title = db_result(db_query("SELECT title FROM {blocks} WHERE module = '%s' AND delta = '%s' AND theme = '%s'", $module, $delta, $theme_key));
+          if (!empty($block_title)) {
+            $block->subject = $block_title == '<none>' ? '' : check_plain($block_title);
+          }
+          $content = theme('block', $block);
+          break;
+        case DS_BLOCK_TITLE_CONTENT:
+          $content = '<h2 class="block-title">'. $block['subject'] .'</h2>';
+          $content .= $block['content'];
+          break;
+        case DS_BLOCK_CONTENT:
+          $content = $block['content'];
+          break;
+      }
+      return $content;
+    }
+  }
+}
+
+/**
  * Theme author name.
  */
-function theme_ds_author_nolink(&$object) {
-  $object->author_rendered = $object->name;
+function theme_ds_author_nolink($field) {
+  return $field['object']->name;
 }
 
 /**
  * Theme author name linked.
  */
-function theme_ds_author_link(&$object) {
-  $object->author_rendered = theme('username', $object);
+function theme_ds_author_link($field) {
+  return theme('username', $field['object']);
+}
+
+/**
+ * Theme the user picture.
+ */
+function theme_ds_picture($field) {
+  return theme('user_picture', $field['object']);
 }
 
 /**
@@ -67,7 +126,6 @@ function template_preprocess_ds_row_object(&$vars) {
   // ds_views_row_adv_VIEWSNAME.
   if ($options['advanced']) {
     $row_function = 'ds_views_row_adv_'. $vars['view']->name;
-    $build_mode = $options['build_mode'];
     $row_function($vars);
   }
   // Simple selector.
@@ -92,12 +150,6 @@ function template_preprocess_ds_display_overview_form(&$vars) {
     $order[$field] = $form[$field]['ds_weight']['#default_value'];
   }
   asort($order);
-
-  // Status.
-  $vars['settings_status'] = drupal_render($form['settings_status']);
-
-  // Render exclude build mode checkbox.
-  $vars['exclude_build_mode'] = drupal_render($form['exclude_build_mode']);
 
   $rows = array();
   foreach ($order as $key => $field) {
@@ -155,7 +207,7 @@ function template_preprocess_ds_display_overview_form(&$vars) {
   if ($form['#plugins'] == TRUE) {
     foreach ($form['#plugin_keys'] as $key => $title) {
       $vars['plugins_tabs'][$key] = $title;
-      $vars['plugins_content'] .= drupal_render($form[$key]);
+      $vars['plugins_content'][$key] = drupal_render($form[$key]);
     }
   }
 
@@ -163,5 +215,4 @@ function template_preprocess_ds_display_overview_form(&$vars) {
   $vars['submit'] = drupal_render($form);
   $vars['regions'] = $regions;
   $vars['build_mode'] = $build_mode;
-  $vars['extra_style'] = ($form['exclude_build_mode']['#default_value'] == TRUE) ? 'style="display: none;"' : '';
 }

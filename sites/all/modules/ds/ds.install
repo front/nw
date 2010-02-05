@@ -1,11 +1,10 @@
 <?php
-// $Id: ds.install,v 1.1 2009/10/18 15:25:22 swentel Exp $
+// $Id: ds.install,v 1.1.2.1 2010/02/02 11:04:30 swentel Exp $
 
 /**
  * @file
  * Display suite install file.
  */
-
 
 /**
  * Implementation of hook_uninstall().

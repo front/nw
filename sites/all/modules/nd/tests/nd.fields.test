@@ -1,5 +1,5 @@
 <?php
-// $Id: nd.fields.test,v 1.1.2.13.2.6 2010/01/27 10:35:23 swentel Exp $
+// $Id: nd.fields.test,v 1.1.2.13.2.10 2010/02/02 11:17:46 swentel Exp $
 
 /**
  * @file
@@ -26,15 +26,6 @@ class NodeDisplaysFields extends DrupalWebTestCase {
   }
 
   /**
-   * Debug helper function. Writes values away to a text file in the files directory.
-   */
-  function _debugHelper($value, $writetype = 'a+') {
-    $debug = fopen($this->originalFileDirectory .'/simpletestdebug.txt', $writetype);
-    fwrite($debug, print_r($value, TRUE) ."\n");
-    fclose($debug);
-  }
-
-  /**
    * Test custom fields.
    */
   function testNdCustomFields() {
@@ -56,7 +47,7 @@ class NodeDisplaysFields extends DrupalWebTestCase {
     $fields = variable_get('nd_fields', array());
     $this->assertTrue(array_key_exists('test_field', $fields), t('test_field exists'), t('Fields'));
     $this->assertEqual($fields['test_field']['title'], $edit['code_title'], t('Title equals Test field label'), t('Fields'));
-    $this->assertEqual($fields['test_field']['code'], $edit['code_code'], t('Code equals <?php echo "test"; ?>'), t('Fields'));
+    $this->assertEqual($fields['test_field']['properties']['code'], $edit['code_code'], t('Code equals <?php echo "test"; ?>'), t('Fields'));
 
     // Try to add the same custom field, must fail.
     $this->drupalPost('admin/ds/nd/fields', $edit, t('Save code field'));
@@ -84,10 +75,9 @@ class NodeDisplaysFields extends DrupalWebTestCase {
     $fields = variable_get('nd_fields', array());
     $this->assertEqual($fields['test_field_two']['title'], $edit['code_title'], t('Title equals Test label 3'), t('Fields'));
     $this->assertEqual(count($fields), 2, t('2 custom fields found'), t('Custom fields'));
-    $out = $this->drupalGet('admin/ds/layout/page/display');
-    $this->_debugHelper($out);
+    $this->drupalGet('admin/ds/layout/page');
     $this->assertNoRaw('Test label 3', t('Custom field excluded on page node type'), t('Custom fields'));
-    $this->drupalGet('admin/ds/layout/story/display');
+    $this->drupalGet('admin/ds/layout/story');
     $this->assertRaw('Test label 3', t('Custom field available on story node type'), t('Custom fields'));
 
     // Delete field.
@@ -104,7 +94,7 @@ class NodeDisplaysFields extends DrupalWebTestCase {
     );
     $this->drupalPost('admin/ds/nd/fields/edit/read_more', $edit, t('Save code field'));
     $fields = variable_get('nd_fields', array());
-    $this->assertEqual($fields['read_more']['type'], DS_FIELD_OVERRIDDEN, t('Read more is overridden'), t('Fields'));
+    $this->assertEqual($fields['read_more']['status'], DS_FIELD_STATUS_OVERRIDDEN, t('Read more is overridden'), t('Fields'));
     $this->assertEqual($fields['read_more']['title'], $edit['code_title'], t('Label equals Override read more'), t('Fields'));
     $this->assertEqual(count($fields), 2, t('2 fields'), t('Custom fields'));
 
@@ -163,6 +153,19 @@ class NodeDisplaysFields extends DrupalWebTestCase {
         'code_key' => 'test_field_real',
         'code_title' => 'Real field',
         'code_code' => 'Day: [d]',
+        'code_token' => FALSE,
+      );
+
+      $this->drupalPost('admin/ds/nd/fields/edit/test_field_real', $edit, t('Save code field'));
+      $fields = variable_get('nd_fields', array());
+      $this->drupalGet('node/'. $page_node->nid);
+      $this->assertNoText('Day: '. date("j", $page_node->created), t('Custom field not executed with token support.'), t('Fields'));
+
+      $edit = array(
+        'code_key' => 'test_field_real',
+        'code_title' => 'Real field',
+        'code_code' => 'Day: [d]',
+        'code_token' => TRUE,
       );
 
       $this->drupalPost('admin/ds/nd/fields/edit/test_field_real', $edit, t('Save code field'));
@@ -185,14 +188,14 @@ class NodeDisplaysFields extends DrupalWebTestCase {
       'block_key' => 'test_field',
       'block_title' => 'Test field label',
       'block_block' => 'user|3',
-      'block_render' => BLOCK_TEMPLATE,
+      'block_render' => DS_BLOCK_TEMPLATE,
     );
     $this->drupalPost('admin/ds/nd/fields', $edit, t('Save block field'));
     $fields = variable_get('nd_fields', array());
     $this->assertTrue(array_key_exists('test_field', $fields), t('test_field exists'), t('Block fields'));
     $this->assertEqual($fields['test_field']['title'], $edit['block_title'], t('Title equals Test field label'), t('Block fields'));
-    $this->assertEqual($fields['test_field']['block'], $edit['block_block'], t('Code equals user|3'), t('Block fields'));
-    $this->assertEqual($fields['test_field']['render'], $edit['block_render'], t('Code equals '. BLOCK_TEMPLATE), t('Block fields'));
+    $this->assertEqual($fields['test_field']['properties']['block'], $edit['block_block'], t('Code equals user|3'), t('Block fields'));
+    $this->assertEqual($fields['test_field']['properties']['render'], $edit['block_render'], t('Code equals '. DS_BLOCK_TEMPLATE), t('Block fields'));
 
     // Create a node and set some fields.
     $page_node = $this->drupalCreateNode();
@@ -200,7 +203,7 @@ class NodeDisplaysFields extends DrupalWebTestCase {
       'title[full][region]' => 'header',
       'test_field[full][region]' => 'middle',
     );
-    $this->drupalPost('admin/ds/layout/page/display', $edit, t('Save'));
+    $this->drupalPost('admin/ds/layout/page', $edit, t('Save'));
 
     // Block rendering through template.
     $this->drupalGet('node/'. $page_node->nid);
@@ -213,7 +216,7 @@ class NodeDisplaysFields extends DrupalWebTestCase {
       'block_key' => 'test_field',
       'block_title' => 'Test field label',
       'block_block' => 'user|3',
-      'block_render' => BLOCK_TITLE_CONTENT,
+      'block_render' => DS_BLOCK_TITLE_CONTENT,
     );
     $this->drupalPost('admin/ds/nd/fields/edit/test_field', $edit, t('Save block field'));
     $this->drupalGet('node/'. $page_node->nid);
@@ -226,7 +229,7 @@ class NodeDisplaysFields extends DrupalWebTestCase {
       'block_key' => 'test_field',
       'block_title' => 'Test field label',
       'block_block' => 'user|3',
-      'block_render' => BLOCK_CONTENT,
+      'block_render' => DS_BLOCK_CONTENT,
     );
     $this->drupalPost('admin/ds/nd/fields/edit/test_field', $edit, t('Save block field'));
     $this->drupalGet('node/'. $page_node->nid);
@@ -271,8 +274,8 @@ class NodeDisplaysFields extends DrupalWebTestCase {
     $this->assertText('Real field', t('Custom field label is shown on page.'), t('Labels'));
 
     // Change the label of this new real field.
-    // @note Run this patch on D6 to allow posts to hidden fields.
-    // @see http://drupal.org/node/488810#comment-1693662 .
+    // Note: run this patch on D6 to allow posts to hidden fields:
+    // http://drupal.org/node/488810#comment-1693662 .
     $edit = array(
       'title[full][label_value]' => 'New Title',
       'test_field_real[full][label_value]' => 'Unreal field',
@@ -281,7 +284,6 @@ class NodeDisplaysFields extends DrupalWebTestCase {
 
     // See if the label values have changed.
     $out = $this->drupalGet('node/'. $page_node->nid);
-    //$this->_debugHelper($out, 'w');
     $this->assertText('New Title', t('The title label is changed.'), t('Labels'));
     $this->assertText('Unreal field', t('The custom field label is changed.'), t('Labels'));
 

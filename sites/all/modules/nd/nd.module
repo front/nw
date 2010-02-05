@@ -1,10 +1,68 @@
 <?php
-// $Id: nd.module,v 1.1.2.123.2.16 2010/01/26 17:27:44 swentel Exp $
+// $Id: nd.module,v 1.1.2.123.2.26 2010/02/03 13:15:56 swentel Exp $
 
 /**
  * @file
  * Node displays.
  */
+
+/**
+ * Implementation of hook_ds_api().
+ */
+function nd_ds_api() {
+
+  $help = array(
+    t('<h3>Node displays</h3>
+      <p>This module comes with a nd.tpl.php, available in the templates folder, which is optimized for use with Node Displays. You can copy the file to your themes folder to use your own version if you want.</p>
+      <p>You can create a file called <strong>nd-<em>node_type</em>.tpl.php</strong>, <strong>nd-<em>node_type</em>-<em>build_mode</em>.tpl.php</strong> or <strong>nd-<em>node_type</em>-<em>build_mode</em>-<em>nid</em>.tpl.php</strong> for even more fine-grained theming.</p>
+      <p>If you exclude the RSS build mode, the default node feed is generated, but might render strange content. Make sure you do not choose the "Titles only" as your feed content setting, otherwhise, this screen will not have any effect. Choosing either "Full text" or "Titles + teaser" does not matter, this screen will have effect on both settings, apart from the read more link. Remember that some fields like upload and terms are added automatically to the feed and that this manipulates the $description variable, it does not add extra keys to the feed.</p>
+      <p>If you have a problem with the content not being rendered through DS, please read <a href="http://drupal.org/node/572614">http://drupal.org/node/572614</a>.
+      ')
+  );
+
+  return array(
+    'title' => 'Node displays',
+    'module' => 'nd',
+    'object' => 'node',
+    'views_base' => 'node',
+    'types' => 'node_get_types',
+    'extra' => array('has_body'),
+    'plugins_exclude' => array(NODE_BUILD_RSS),
+    'regions_single' => array(NODE_BUILD_RSS),
+    'help' => $help,
+  );
+}
+
+/**
+ * Implementation of hook_content_build_modes().
+ */
+function nd_content_build_modes() {
+  $build_modes = array(
+    'nd' => array(
+      'title' => t('Node displays'),
+      'build modes' => array(
+        'full' => array(
+          'title' => t('Full node'),
+          'weight' => -1,
+        ),
+        'teaser' => array(
+          'title' => t('Teaser'),
+          'weight' => 1,
+        ),
+        'sticky' => array(
+          'title' => t('Sticky'),
+          'weight' => 2,
+        ),
+        NODE_BUILD_RSS => array(
+          'title' => t('RSS'),
+          'weight' => 3,
+        )
+      )
+    )
+  );
+
+  return $build_modes;
+}
 
 /**
  * Implementation of hook_registry_alter().
@@ -137,66 +195,20 @@ function ds_views_row_node(&$vars, $build_mode) {
   }
 
   $node->build_mode = $build_mode;
+
+  // Check the teaser flag and show_links flag.
   $teaser = ($node->build_mode != 'full') ? TRUE : FALSE;
-  $vars['object'] = node_view($node, $teaser, FALSE, FALSE);
-}
+  $show_links = ds_show_links('nd', $node->type, $build_mode);
 
-/**
- * Implementation of hook_content_build_modes().
- */
-function nd_content_build_modes() {
-  $build_modes = array(
-    'full' => array(
-      'title' => t('Full node'),
-      'weight' => -1,
-    ),
-    'teaser' => array(
-      'title' => t('Teaser'),
-      'weight' => 1,
-    ),
-    'sticky' => array(
-      'title' => t('Sticky'),
-      'weight' => 2,
-    ),
-    NODE_BUILD_RSS => array(
-      'title' => t('RSS'),
-      'weight' => 3,
-    ),
-  );
-
-  return $build_modes;
-}
-
-/**
- * Implementation of hook_ds_api().
- */
-function nd_ds_api() {
-
-  $help = array(
-    t('<h3>Node displays</h3>
-      <p>This module comes with a nd.tpl.php, available in the templates folder, which is optimized for use with Node Displays. You can copy the file to your themes folder to use your own version if you want.</p>
-      <p>You can create a file called <strong>nd-<em>node_type</em>.tpl.php</strong>, <strong>nd-<em>node_type</em>-<em>build_mode</em>.tpl.php</strong> or <strong>nd-<em>node_type</em>-<em>build_mode</em>-<em>nid</em>.tpl.php</strong> for even more fine-grained theming.</p>
-      <p>If you exclude the RSS build mode, the default node feed is generated, but might render strange content. Make sure you do not choose the "Titles only" as your feed content setting, otherwhise, this screen will not have any effect. Choosing either "Full text" or "Titles + teaser" does not matter, this screen will have effect on both settings, apart from the read more link. Remember that some fields like upload and terms are added automatically to the feed and that this manipulates the $description variable, it does not add extra keys to the feed.</p>')
-  );
-
-  return array(
-    'title' => 'Node displays',
-    'module' => 'nd',
-    'object' => 'node',
-    'views_base' => 'node',
-    'types' => 'node_get_types',
-    'extra' => array('has_body'),
-    'plugins_exclude' => array(NODE_BUILD_RSS),
-    'regions_single' => array(NODE_BUILD_RSS),
-    'help' => $help,
-  );
+  // Build object.
+  $vars['object'] = node_view($node, $teaser, FALSE, $show_links);
 }
 
 /**
  * Implementation of hook_theme().
  */
 function nd_theme() {
- $theme_functions = array();
+  $theme_functions = array();
 
   // Formatter theming functions.
   $formatters = array(
@@ -214,17 +226,6 @@ function nd_theme() {
 }
 
 /**
- * Implementation of hook_ds_buildmodes_alter().    'read_more' => array(
-      'title' => t('Read more'),
-      'code' => '<?php echo l(t("Read more"), "node/$object->nid"); ?>',
-      'type' => DS_FIELD_OVERRIDABLE,
-    ),
- */
-function nd_ds_buildmodes_alter(&$build_modes) {
-  $build_modes['nd']['full']['weight'] = -1;
-}
-
-/**
  * Implementation of hook_ds_fields().
  */
 function nd_ds_fields($type_name, $build_mode, $extra) {
@@ -232,39 +233,58 @@ function nd_ds_fields($type_name, $build_mode, $extra) {
   $fields = array(
     'title' => array(
       'title' => t('Title'),
-      'formatters' => array(
-        'nd_title_h1_nolink' => t('H1 title'),
-        'nd_title_h1_link' => t('H1 title, linked to node'),
-        'nd_title_h2_nolink' => t('H2 title'),
-        'nd_title_h2_link' => t('H2 title, linked to node'),
-        'nd_title_h2_block_nolink' => t('H2 block title'),
-        'nd_title_h2_block_link' => t('H2 block title, linked to node'),
-        'nd_title_p_nolink' => t('Paragraph title'),
-        'nd_title_p_link' => t('Paragraph title, linked to node'),
-      ),
-      'type' => DS_FIELD_THEME,
+      'type' => DS_FIELD_TYPE_THEME,
+      'status' => DS_FIELD_STATUS_STATIC,
+      'properties' => array(
+        'formatters' => array(
+          'nd_title_h1_nolink' => t('H1 title'),
+          'nd_title_h1_link' => t('H1 title, linked to node'),
+          'nd_title_h2_nolink' => t('H2 title'),
+          'nd_title_h2_link' => t('H2 title, linked to node'),
+          'nd_title_h2_block_nolink' => t('H2 block title'),
+          'nd_title_h2_block_link' => t('H2 block title, linked to node'),
+          'nd_title_p_nolink' => t('Paragraph title'),
+          'nd_title_p_link' => t('Paragraph title, linked to node'),
+        ),
+      )
     ),
     'author' => array(
       'title' => t('Author'),
-      'formatters' => array(
-        'ds_author_nolink' => t('Author'),
-        'ds_author_link' => t('Author linked to profile')
+      'type' => DS_FIELD_TYPE_THEME,
+      'status' => DS_FIELD_STATUS_STATIC,
+      'properties' => array(
+        'formatters' => array(
+          'ds_author_nolink' => t('Author'),
+          'ds_author_link' => t('Author linked to profile')
+        ),
       ),
-      'type' => DS_FIELD_THEME,
     ),
     'links' => array(
       'title' => t('Links'),
-      'type' => DS_FIELD_PREPROCESS,
+      'type' => DS_FIELD_TYPE_PREPROCESS,
+      'status' => DS_FIELD_STATUS_STATIC,
     ),
     'read_more' => array(
       'title' => t('Read more'),
-      'code' => '<?php echo l(t("Read more"), "node/$object->nid"); ?>',
-      'type' => DS_FIELD_DEFAULT,
+      'type' => DS_FIELD_TYPE_CODE,
+      'status' => DS_FIELD_STATUS_DEFAULT,
+      'properties' => array(
+        'formatters' => array(
+          'ds_eval_code' => t('Default'),
+        ),
+        'code' => '<?php echo l(t("Read more"), "node/$object->nid"); ?>'
+      ),
     ),
     'post_date' => array(
       'title' => t('Post date'),
-      'code' => '<?php echo format_date($object->created, "custom", "d/m/Y"); ?>',
-      'type' => DS_FIELD_DEFAULT,
+      'type' => DS_FIELD_TYPE_CODE,
+      'status' => DS_FIELD_STATUS_DEFAULT,
+      'properties' => array(
+        'formatters' => array(
+          'ds_eval_code' => t('Default'),
+        ),
+        'code' => '<?php echo format_date($object->created, "custom", "d/m/Y"); ?>'
+      ),
     ),
   );
 
@@ -272,36 +292,49 @@ function nd_ds_fields($type_name, $build_mode, $extra) {
   if (isset($extra['has_body']) && $extra['has_body'] == TRUE) {
     $fields['body'] = array(
       'title' => t('Core body'),
-      'formatters' => array(
-        'nd_bodyfield' => t('Default')
-      ),
-      'type' => DS_FIELD_THEME,
+      'type' => DS_FIELD_TYPE_THEME,
+      'status' => DS_FIELD_STATUS_STATIC,
+      'properties' => array(
+        'formatters' => array(
+          'nd_bodyfield' => t('Default')
+        ),
+      )
     );
   }
 
+  // Taxonomy support.
   if (module_exists('taxonomy')) {
     $fields['terms'] = array(
       'title' => t('Taxonomy'),
-      'type' => DS_FIELD_PREPROCESS,
+      'type' => DS_FIELD_TYPE_PREPROCESS,
+      'status' => DS_FIELD_STATUS_STATIC,
     );
   }
 
+  // Upload support.
   if (module_exists('upload') && $build_mode != 'teaser' && variable_get("upload_$type_name", 1)) {
     $fields['files'] = array(
       'title' => t('Core upload'),
-      'type' => DS_FIELD_IGNORE,
+      'type' => DS_FIELD_TYPE_IGNORE,
+      'status' => DS_FIELD_STATUS_STATIC,
     );
   }
 
+  // Book support.
   if (module_exists('book') && $type_name == 'book') {
     $fields['book_navigation'] = array(
       'title' => t('Book navigation'),
-      'type' => DS_FIELD_FUNCTION,
-      'formatters' => array(
-        'nd_book_navigation' => t('Book navigation'),
+      'type' => DS_FIELD_TYPE_FUNCTION,
+      'status' => DS_FIELD_STATUS_STATIC,
+      'properties' => array(
+        'formatters' => array(
+          'nd_book_navigation' => t('Book navigation'),
+        ),
       ),
     );
   }
+
+  // Comment support (count and add new comment link)
 
   return array('nd' => $fields);
 }
@@ -309,59 +342,59 @@ function nd_ds_fields($type_name, $build_mode, $extra) {
 /**
  * ND theming functions.
  */
-function theme_nd_bodyfield(&$node) {
-  $node->body_rendered = $node->content['body']['#value'];
+function theme_nd_bodyfield($field) {
+  return $field['object']->content['body']['#value'];
 }
 
-function theme_nd_title_h1_nolink(&$node) {
-  $node->title_rendered = '<h1>'. check_plain($node->title) .'</h1>';
+function theme_nd_title_h1_nolink($field) {
+  return '<h1>'. check_plain($field['object']->title) .'</h1>';
 }
 
-function theme_nd_title_h1_link(&$node) {
-  $node->title_rendered = '<h1>'. l($node->title, 'node/'. $node->nid) .'</h1>';
+function theme_nd_title_h1_link($field) {
+  return '<h1>'. l($field['object']->title, 'node/'. $field['object']->nid) .'</h1>';
 }
 
-function theme_nd_title_h2_nolink(&$node) {
-  $node->title_rendered = '<h2>'. check_plain($node->title) .'</h2>';
+function theme_nd_title_h2_nolink($field) {
+  return '<h2>'. check_plain($field['object']->title) .'</h2>';
 }
 
-function theme_nd_title_h2_link(&$node) {
-  $node->title_rendered = '<h2>'. l($node->title, 'node/'. $node->nid) .'</h2>';
+function theme_nd_title_h2_link($field) {
+  return '<h2>'. l($field['object']->title, 'node/'. $field['object']->nid) .'</h2>';
 }
 
-function theme_nd_title_h2_block_nolink(&$node) {
-  $node->title_rendered = '<h2 class="block-title">'. check_plain($node->title) .'</h2>';
+function theme_nd_title_h2_block_nolink($field) {
+  return '<h2 class="block-title">'. check_plain($field['object']->title) .'</h2>';
 }
 
-function theme_nd_title_h2_block_link(&$node) {
-  $node->title_rendered = '<h2 class="block-title">'. l($node->title, 'node/'. $node->nid) .'</h2>';
+function theme_nd_title_h2_block_link($field) {
+  return '<h2 class="block-title">'. l($field['object']->title, 'node/'. $field['object']->nid) .'</h2>';
 }
 
-function theme_nd_title_p_nolink(&$node) {
-  $node->title_rendered = '<p>'. check_plain($node->title) .'</p>';
+function theme_nd_title_p_nolink($field) {
+  return '<p>'. check_plain($field['object']->title) .'</p>';
 }
 
-function theme_nd_title_p_link(&$node) {
-  $node->title_rendered = '<p>'. l($node->title, 'node/'. $node->nid) .'</p>';
+function theme_nd_title_p_link($field) {
+  return '<p>'. l($field['object']->title, 'node/'. $field['object']->nid) .'</p>';
 }
 
 /**
  * Book navigation.
  */
-function nd_book_navigation(&$node) {
+function nd_book_navigation($field) {
   $content = '';
-  if (isset($node->content['book_navigation'])) {
-    if (isset($node->content['book_navigation']['#value'])) {
-      $content = $node->content['book_navigation']['#value'];
+  if (isset($field['object']->content['book_navigation'])) {
+    if (isset($field['object']->content['book_navigation']['#value'])) {
+      $content = $field['object']->content['book_navigation']['#value'];
     }
-    elseif (isset($node->book['bid']) && !empty($node->book['bid'])) {
-      $content = theme('book_navigation', $node->book);
+    elseif (isset($field['object']->book['bid']) && !empty($field['object']->book['bid'])) {
+      $content = theme('book_navigation', $field['object']->book);
     }
   }
   else {
-    if (isset($node->book['bid']) && !empty($node->book['bid'])) {
-      $content = theme('book_navigation', $node->book);
+    if (isset($field['object']->book['bid']) && !empty($field['object']->book['bid'])) {
+      $content = theme('book_navigation', $field['object']->book);
     }
   }
-  $node->book_navigation_rendered = $content;
+  return $content;
 }

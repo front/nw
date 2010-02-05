@@ -1,5 +1,5 @@
 <?php
-// $Id: ds.features.inc,v 1.1.2.11 2010/01/27 16:55:47 swentel Exp $
+// $Id: ds.features.inc,v 1.1.2.12 2010/02/02 11:04:30 swentel Exp $
 
 /**
  * @file
@@ -41,7 +41,7 @@ function _ds_features_get_types() {
 }
 
 /**
- * Implementation of hook_features_export.
+ * Implementation of hook_features_export().
  */
 function ds_features_export($data, &$export, $module_name = '') {
   $pipe = array();

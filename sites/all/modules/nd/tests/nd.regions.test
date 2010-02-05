@@ -1,5 +1,5 @@
 <?php
-// $Id: nd.regions.test,v 1.1.2.7.2.3 2010/01/27 10:35:23 swentel Exp $
+// $Id: nd.regions.test,v 1.1.2.7.2.4 2010/01/28 17:53:02 swentel Exp $
 
 /**
  * @file
@@ -23,15 +23,6 @@ class NodeDisplaysRegions extends DrupalWebTestCase {
    */
   function setUp() {
     parent::setUp('ds', 'nd');
-  }
-
-  /**
-   * Debug helper function. Writes values away to a text file in the files directory.
-   */
-  function _debugHelper($value, $writetype = 'a+') {
-    $debug = fopen($this->originalFileDirectory .'/simpletestdebug.txt', $writetype);
-    fwrite($debug, print_r($value, TRUE) ."\n");
-    fclose($debug);
   }
 
   /**

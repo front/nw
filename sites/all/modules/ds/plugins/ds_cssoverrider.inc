@@ -1,9 +1,11 @@
 <?php
+// $Id: ds_cssoverrider.inc,v 1.1.2.6 2010/02/02 11:04:30 swentel Exp $
 
 /**
- * Class DS_CSSOverrider
- *
+ * @file
+ * DS_CSSOverrider: plugin to override css per region.
  */
+
 class ds_cssoverrider {
 
   /**
@@ -22,7 +24,6 @@ class ds_cssoverrider {
       '#type' => 'fieldset',
       '#collapsible' => FALSE,
       '#collapsed' => FALSE,
-      //'#title' => t('CSS overrider'),
       '#description' => t('Either add extra classes or override CSS inline per region.'),
     );
 
@@ -44,7 +45,6 @@ class ds_cssoverrider {
         );
       }
     }
-
   }
 
   /**
@@ -64,9 +64,7 @@ class ds_cssoverrider {
     }
 
     $display_settings[$build_mode]['cssoverrider'] = $css_save;
-
   }
-
 
   /**
    * process().
@@ -75,8 +73,8 @@ class ds_cssoverrider {
 
     foreach ($display->themed_regions as $region_name => $region_data) {
 
-      $classes = ds_default_value($display_settings, $vars[$object_type]->build_mode, 'cssoverrider', 'class', $region_name, '');
-      $inline = ds_default_value($display_settings, $vars[$object_type]->build_mode, 'cssoverrider', 'inline', $region_name, '');
+      $classes = ds_default_value($display_settings, $display->build_mode, 'cssoverrider', 'class', $region_name, '');
+      $inline = ds_default_value($display_settings, $display->build_mode, 'cssoverrider', 'inline', $region_name, '');
 
       if (!empty($classes)) {
         $display->themed_regions[$region_name]['extra_class'] = ' '. $classes;
@@ -85,9 +83,6 @@ class ds_cssoverrider {
       if (!empty($inline)) {
         $display->themed_regions[$region_name]['inline_css'] = 'style="'. $inline .'"';
       }
-
     }
-
   }
-
 }

@@ -1,5 +1,5 @@
 <?php
-// $Id: nd.buildmodes.test,v 1.1.2.11.2.2 2010/01/26 12:52:17 swentel Exp $
+// $Id: nd.buildmodes.test,v 1.1.2.11.2.4 2010/01/29 12:29:35 swentel Exp $
 
 /**
  * @file
@@ -23,15 +23,6 @@ class NodeDisplaysBuildModes extends DrupalWebTestCase {
    */
   function setUp() {
     parent::setUp('ds', 'nd');
-  }
-
-  /**
-   * Debug helper function. Writes values away to a text file in the files directory.
-   */
-  function _debugHelper($value, $writetype = 'a+') {
-    $debug = fopen($this->originalFileDirectory .'/simpletestdebug.txt', $writetype);
-    fwrite($debug, print_r($value, TRUE) ."\n");
-    fclose($debug);
   }
 
   /**
@@ -136,21 +127,21 @@ class NodeDisplaysBuildModes extends DrupalWebTestCase {
       'key' => 'test_key',
       'name' => 'Test label'
     );
-    $this->drupalPost('admin/ds/nd/buildmodes', $edit, t('Save display'));
+    $this->drupalPost('admin/ds/nd/buildmodes', $edit, t('Save build mode'));
     $build_modes = variable_get('nd_build_modes', array());
     $this->assertTrue(array_key_exists('test_key', $build_modes), t('test_key exists'), t('Custom build modes'));
     $this->assertEqual($build_modes['test_key'], $edit['name'], t('Label equals Test label'), t('Custom build modes'));
 
     // Try to add the same build mode, must fail.
-    $this->drupalPost('admin/ds/nd/buildmodes', $edit, t('Save display'));
-    $this->assertText(t('This display mode already exists.'), 'Key already exists', t('Custom build modes'));
+    $this->drupalPost('admin/ds/nd/buildmodes', $edit, t('Save build mode'));
+    $this->assertText(t('This build mode already exists.'), 'Key already exists', t('Custom build modes'));
 
     // Update build mode.
     $edit = array(
       'key' => 'test_key',
       'name' => 'Test label 2',
     );
-    $this->drupalPost('admin/ds/nd/buildmodes/edit/test_key', $edit, t('Save display'));
+    $this->drupalPost('admin/ds/nd/buildmodes/edit/test_key', $edit, t('Save build mode'));
     $build_modes = variable_get('nd_build_modes', array());
     $this->assertEqual($build_modes['test_key'], $edit['name'], t('Label equals Test label 2'), t('Custom build modes'));
     $this->assertEqual(count($build_modes), 1, t('Only 1 build mode'), t('Custom build modes'));
@@ -160,7 +151,7 @@ class NodeDisplaysBuildModes extends DrupalWebTestCase {
       'key' => 'test_key_two',
       'name' => 'Test label 3',
     );
-    $this->drupalPost('admin/ds/nd/buildmodes', $edit, t('Save display'));
+    $this->drupalPost('admin/ds/nd/buildmodes', $edit, t('Save build mode'));
     $build_modes = variable_get('nd_build_modes', array());
     $this->assertEqual($build_modes['test_key_two'], $edit['name'], t('Label equals Test label 3'), t('Custom build modes'));
     $this->assertEqual(count($build_modes), 2, t('2 build modes found'), t('Custom build modes'));
@@ -176,7 +167,7 @@ class NodeDisplaysBuildModes extends DrupalWebTestCase {
       'key' => 'test_key moehaha',
       'name' => 'Test label'
     );
-    $this->drupalPost('admin/ds/nd/buildmodes', $edit, t('Save display'));
+    $this->drupalPost('admin/ds/nd/buildmodes', $edit, t('Save build mode'));
     $this->assertText(t('The machine-readable name must contain only lowercase letters and underscores.'), 'Key is not valid', t('Custom build modes'));
   }
 }

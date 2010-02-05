@@ -1,5 +1,5 @@
 <?php
-// $Id: ds-display-overview-form.tpl.php,v 1.1.2.8 2010/01/28 00:04:40 swentel Exp $
+// $Id: ds-display-overview-form.tpl.php,v 1.1.2.12 2010/01/29 14:22:40 swentel Exp $
 
 /**
  * @file
@@ -13,22 +13,20 @@
  *   Properties (human_name, weight, stickyorder, build_mode, class, label_class)
  */
 
-print $exclude_build_mode;
-
 if ($rows): ?>
 
-<div id="ds-display-content" <?php print $extra_style; ?>>
+<div id="ds-display-content">
   <?php if (!empty($plugins_tabs)): ?>
     <div id="ds-tabs">
-      <div id="field-tab" class="tab selected"><a href="javascript:;" onClick="javascript:toggleFieldPluginsLink('field-tab', 'plugin-tab', 'fields-content', 'plugins-content');"><?php print t('Fields'); ?></a></div>
+      <div id="field-tab" class="tab selected"><a href="javascript:;" onClick="Drupal.DisplaySuite.toggleDisplayTab('field-tab'); return false;"><?php print t('Fields'); ?></a></div>
       <?php foreach ($plugins_tabs as $key => $title): ?>
-      <div id="<?php print $key; ?>-tab" class="tab<?php ?>"><a href="javascript:;" onClick="javascript:toggleFieldPluginsLink('plugin-tab', 'field-tab', 'plugins-content', 'fields-content');"><?php print $title; ?></a></div>
+      <div id="<?php print $key; ?>-tab" class="tab"><a href="javascript:;" onClick="Drupal.DisplaySuite.toggleDisplayTab('<?php print $key; ?>-tab'); return false;"><?php print $title; ?></a></div>
       <?php endforeach; ?>
     </div>
     <div style="clear: both"></div>
   <?php endif; ?>
 
-  <div id="fields-content">
+  <div id="field-content" class="ds-display">
 
     <table id="fields" class="sticky-enabled">
       <thead>
@@ -73,9 +71,9 @@ if ($rows): ?>
     </table>
   </div>
   <?php if (!empty($plugins_tabs)): ?>
-  <div id="plugins-content">
-    <?php print $plugins_content; ?>
-  </div>
+    <?php foreach ($plugins_content as $key => $form): ?>
+      <div id="<?php print $key; ?>-content" class="ds-hidden"><?php print $form; ?></div>
+    <?php endforeach; ?>
   <?php endif; ?>
 </div>
 <?php

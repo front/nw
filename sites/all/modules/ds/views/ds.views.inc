@@ -1,5 +1,5 @@
 <?php
-// $Id: ds.views.inc,v 1.1.2.2 2009/12/26 13:39:53 swentel Exp $
+// $Id: ds.views.inc,v 1.1.2.3 2010/01/30 17:05:09 swentel Exp $
 
 /**
  * @file
@@ -12,7 +12,7 @@
 function ds_views_plugins() {
   $path = drupal_get_path('module', 'ds');
   return array(
-    'module' => 'ds', // This just tells our themes are elsewhere.
+    'module' => 'ds',
     'row' => array(
       'ds' => array(
         'title' => t('Display suite'),

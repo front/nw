@@ -1,5 +1,8 @@
-// $Id: buildmodes.js,v 1.1.2.1 2009/10/24 13:32:28 swentel Exp $
+// $Id: buildmodes.js,v 1.1.2.2 2010/01/28 14:47:28 swentel Exp $
 
+/**
+ * Toggle all buildmodes at once.
+ */
 Drupal.behaviors.ds_buildmodes = function(context) {
 
 	$('.block-all').bind('click', function() {

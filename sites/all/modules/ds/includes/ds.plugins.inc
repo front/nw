@@ -1,5 +1,5 @@
 <?php
-// $Id: ds.plugins.inc,v 1.1.2.4 2010/01/27 23:22:28 stalski Exp $
+// $Id: ds.plugins.inc,v 1.1.2.5 2010/01/28 00:49:28 swentel Exp $
 
 /**
  * @file
@@ -96,6 +96,9 @@ function ds_plugins_retrieve($module) {
       $plugins[$plugin] = $data;
     }
   }
+
+  // Give modules a change to alter plugins.
+  drupal_alter('ds_plugins', $plugins);
 
   return $plugins;
 }

@@ -1,5 +1,5 @@
 <?php
-// $Id: ds.tools.inc,v 1.1.2.16 2010/01/27 21:12:11 swentel Exp $
+// $Id: ds.tools.inc,v 1.1.2.19 2010/02/02 11:04:30 swentel Exp $
 
 /**
  * @file
@@ -124,12 +124,23 @@ function ds_export(&$form_state) {
         // Content types.
         foreach ($api_info['types']() as $tkey => $type) {
           $options[$module .'-'. $tkey] = $type->name;
+          $global_exclude = variable_get($module .'_type_'. $tkey, FALSE);
+          if ($global_exclude == TRUE) {
+            $ds_variables[] = $module .'_type_'. $tkey;
+          }
         }
         // Plugins.
         $plugins = variable_get($module .'_plugin_settings', array());
         if (!empty($plugins)) {
           $ds_variables[] = $module .'_plugin_settings';
         }
+        // Build modes
+        $build_modes = variable_get($module .'_build_modes', array());
+        if (!empty($build_modes)) {
+          $ds_variables[] = $module .'_build_modes';
+        }
+        // Build modes exclude.
+        $ds_variables[] = $module .'_buildmodes_exclude';
       }
 
       if (!empty($options)) {
@@ -159,7 +170,7 @@ function ds_export(&$form_state) {
       $export = ds_export_build($form_state['values']['types']);
 
       if (!empty($export['exclude']['fields'])) {
-        drupal_set_message(t('Following fields were not included in the export because they are default fields: %fields', array('%fields' => implode(',', $export['exclude']['fields']))));
+        drupal_set_message(t('Following fields were not included in the export because they are default fields: %fields', array('%fields' => implode(', ', $export['exclude']['fields']))));
       }
 
       if (!empty($export['ds'])) {
@@ -215,7 +226,7 @@ function ds_export(&$form_state) {
     if (!empty($ds_variables)) {
       $form['other'] = array(
         '#type' => 'item',
-        '#value' => t('Other variables you might consider to have in code (likely your install file): %variables<br />You can look this up in your database or use <a href="http://drupal.org/project/variable_dump">http://drupal.org/project/variable_dump</a> to create variable exports.', array('%variables' => implode($ds_variables))),
+        '#value' => t('Other variables you might consider to have in code (likely your install file): %variables. You can look this up in your database or use <a href="http://drupal.org/project/variable_dump">http://drupal.org/project/variable_dump</a> to create variable exports.', array('%variables' => implode(', ', $ds_variables))),
       );
     }
   }
@@ -249,12 +260,12 @@ function ds_export_build($values) {
       if (!empty($fields)) {
         // We don't export overridden fields, unset them if necessary.
         foreach ($fields as $key => $field) {
-          if ($field['type'] == DS_FIELD_OVERRIDDEN) {
+          if ($field['status'] == DS_FIELD_STATUS_OVERRIDDEN) {
             unset($fields[$key]);
             $return['exclude']['fields'][] = $field['title'];
           }
-          elseif ($field['type'] == DS_FIELD_UI) {
-            $fields[$key]['type'] = DS_FIELD_DEFAULT;
+          elseif ($field['status'] == DS_FIELD_STATUS_CUSTOM) {
+            $fields[$key]['status'] = DS_FIELD_STATUS_DEFAULT;
           }
         }
         if (!empty($fields))
@@ -332,10 +343,10 @@ function ds_var_export($var, $prefix = '  ', $init = TRUE, $indent = '  ') {
       $output .= "$indent)";
     }
   }
-  else if (is_bool($var)) {
+  elseif (is_bool($var)) {
     $output = $var ? 'TRUE' : 'FALSE';
   }
-  else if (is_string($var) && strpos($var, "\n") !== FALSE) {
+  elseif (is_string($var) && strpos($var, "\n") !== FALSE) {
     // Replace line breaks in strings with a token for replacement
     // at the very end. This protects multi-line strings from
     // unintentional indentation.

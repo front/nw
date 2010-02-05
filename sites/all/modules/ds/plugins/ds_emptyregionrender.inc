@@ -1,12 +1,11 @@
 <?php
-// $Id $
+// $Id: ds_emptyregionrender.inc,v 1.1.2.6 2010/02/02 11:04:30 swentel Exp $
 
 /**
- * Class DS_EmptyRegionRender
- *
- *   Plugin to render an empty region.
- *
+ * @file
+ * DS_EmptyRegionRender: Plugin to render an empty region.
  */
+
 class ds_emptyregionrender {
 
   /**
@@ -25,7 +24,6 @@ class ds_emptyregionrender {
       '#type' => 'fieldset',
       '#collapsible' => FALSE,
       '#collapsed' => FALSE,
-      //'#title' => t('Empty region render'),
       '#description' => t('Toggle regions you want to render when there are no fields in it or when field values are empty.'),
     );
 
@@ -40,7 +38,6 @@ class ds_emptyregionrender {
         );
       }
     }
-
   }
 
   /**
@@ -58,7 +55,6 @@ class ds_emptyregionrender {
     }
 
     $display_settings[$build_mode]['emptyregionrender'] = $regions_save;
-
   }
 
   /**
@@ -68,7 +64,7 @@ class ds_emptyregionrender {
 
     foreach ($display->all_regions as $region_name => $region_title) {
 
-      $render = ds_default_value($display_settings, $vars[$object_type]->build_mode, 'emptyregionrender', 'render', $region_name, FALSE);
+      $render = ds_default_value($display_settings, $display->build_mode, 'emptyregionrender', 'render', $region_name, FALSE);
 
       if ($render == TRUE && !isset($display->themed_regions[$region_name])) {
 
@@ -79,7 +75,5 @@ class ds_emptyregionrender {
         }
       }
     }
-
   }
-
 }

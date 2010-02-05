@@ -1,4 +1,4 @@
-// $Id: ds.js,v 1.1.2.3 2010/01/27 17:07:51 swentel Exp $
+// $Id: ds.js,v 1.1.2.7 2010/01/29 14:22:40 swentel Exp $
 
 /**
  * Move a field in the fields table from one region to another via select list.
@@ -113,47 +113,47 @@ Drupal.behaviors.fieldDrag = function(context) {
 };
 
 /**
- * Toggle checkbox to exclude single build mode.
+ * Drupal ds object.
  */
-function toggleFieldOverviewForm() {
-  var toggled = $('#edit-exclude-build-mode').attr('checked');
-  if (toggled == false) {
-    $('#ds-display-content').show();  
-  }
-  else {
-    $('#ds-display-content').hide();
-  }
-}
+Drupal.DisplaySuite = Drupal.DisplaySuite || {};
 
 /**
  * Show / hide fields or plugins content.
  */
-function toggleFieldPluginsLink(highlight_tab, nonhighlight_tab, div_show, div_hide) {
-  $('#' + div_show).show();
-  $('#' + highlight_tab).addClass('selected');
-  $('#' + div_hide).hide();
-  $('#' + nonhighlight_tab).removeClass('selected');
+Drupal.DisplaySuite.toggleDisplayTab = function(element) {
+  $('#ds-tabs .tab').each(function() {
+    var tab_id = $(this).attr('id');
+    var content_id = tab_id.replace('-tab', '-content');
+	if (tab_id == element) {
+	  // Tabs.
+      $(this).addClass('selected');
+      $(this).removeClass('not-selected');
+      // Content.
+      $('#'+ content_id).show();
+    }
+    else {
+      // Tabs.
+      $(this).addClass('not-selected');
+      $(this).removeClass('selected');
+      // Content.
+      $('#'+ content_id).hide();
+    }
+  });	
 }
-
-/**
- * Drupal ds object.
- */
- Drupal.DisplaySuite = Drupal.DisplaySuite || {};
  
 /**
  * Change the label of a field instance in a build mode.
  */
- Drupal.DisplaySuite.changeLabel = function(element, title) {
+Drupal.DisplaySuite.changeLabel = function(element, title) {
  
-   var changed = prompt(Drupal.t("Edit label"), title);
+  var changed = prompt(Drupal.t("Edit label"), title);
    
-   if (changed == '') {
-     alert(Drupal.t('Field can not be empty'));
-     return false;
-   }
+  if (changed == '') {
+    alert(Drupal.t('Field can not be empty'));
+    return false;
+  }
    
-   var labelcell = $(element).parents(".ds-label");
-   labelcell.find(".label-field").text(changed);
-   labelcell.find("input").val(changed);
-   
- }
+  var labelcell = $(element).parents(".ds-label");
+  labelcell.find(".label-field").text(changed);
+  labelcell.find("input").val(changed);
+}

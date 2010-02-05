@@ -1,5 +1,5 @@
 <?php
-// $Id: ndtest.ds_default.inc,v 1.1.2.6 2010/01/27 13:56:55 swentel Exp $
+// $Id: ndtest.ds_default.inc,v 1.1.2.8 2010/02/03 08:33:10 swentel Exp $
 
 /**
  * @file
@@ -63,7 +63,7 @@ function _ndtest_ds_default_settings() {
             ),
             'test_key' => array(
               'weight' => '-19',
-              'format' => '',
+              'format' => 'ds_eval_code',
               'region' => 'disabled',
               'label_value' => 'Test key',
               'labelformat' => 'hidden',
@@ -124,7 +124,7 @@ function _ndtest_ds_default_settings() {
             ),
             'test_key' => array(
               'weight' => '-20',
-              'format' => '',
+              'format' => 'ds_eval_code',
               'region' => 'footer',
               'label_value' => 'Test key',
               'labelformat' => 'hidden',
@@ -143,14 +143,19 @@ function _ndtest_ds_fields() {
     'nd' => array(
       'test_key' => array(
         'title' => 'Test key',
-        'code' => '<?php
+        'type' => DS_FIELD_TYPE_CODE,
+        'status' => DS_FIELD_STATUS_DEFAULT,
+        'properties' => array(
+          'formatters' => array(
+            'ds_eval_code' => t('Default'),
+          ),
+          'code' => '<?php
 echo "Test key: ". $object->nid;
-?>',
+?>'),
         'exclude' => array(
           'story' => 'story',
           'page' => 0,
         ),
-        'type' => 6,
       ),
     ),
   );

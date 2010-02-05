@@ -1,15 +1,36 @@
 <?php
-// $Id: views_plugin_ds_object_view.inc,v 1.1.2.4 2009/12/28 15:50:07 swentel Exp $
+// $Id: views_plugin_ds_object_view.inc,v 1.1.2.6 2010/01/30 20:14:11 swentel Exp $
 
 /**
  * @file
- * Contains the nd view style plugin.
+ * Contains the ds view style plugin.
  */
 
 /**
- * Plugin which performs a object on the resulting object based on ds build modes.
+ * Plugin which sets a build mode on the resulting object.
  */
 class views_plugin_ds_object_view extends views_plugin_row {
+
+  // Views 3 support: set base_table and base_field.
+  function init(&$view, &$display, $options = NULL) {
+    parent::init($view, $display, $options);
+    if (version_compare(views_api_version(), '2.0') == 1) {
+      $this->base_table = $view->base_table;
+      $this->base_field = $this->ds_views_3_support();
+    }
+  }
+
+  // Return base_field based on base_table. It might not be
+  // the cleanest solution, it's the fastest though. No
+  // need to a lot of mumbo jumbo here.
+  function ds_views_3_support() {
+    $base_table_fields = array(
+      'node' => 'nid',
+      'users' => 'uid',
+      'comments' => 'cid',
+    );
+    return $base_table_fields[$this->base_table];
+  }
 
   function option_definition() {
     $options = parent::option_definition();

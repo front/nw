@@ -1,5 +1,5 @@
 <?php
-// $Id: ds.info.inc,v 1.1.2.3 2009/12/28 18:28:21 swentel Exp $
+// $Id: ds.info.inc,v 1.1.2.4 2010/01/28 01:15:58 swentel Exp $
 
 /**
  * @file
@@ -18,9 +18,7 @@ function ds_info($module) {
 
   // General info (if any).
   if (!empty($help)) {
-    //$fieldset['#title'] = t('General info');
     $info = theme('item_list', $help);
-    //$info .= theme('fieldset', $fieldset);
   }
 
   if (!empty($info)) {

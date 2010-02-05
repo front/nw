@@ -1,6 +1,8 @@
 <?php
-// $Id: nd.tpl.php,v 1.1.2.1 2010/01/15 14:33:14 swentel Exp $
+// $Id: nd.tpl.php,v 1.1.2.2 2010/02/02 11:17:46 swentel Exp $
+
 /**
+ * @file
  * This template is optimized for use with the Node displays module.
  *
  * Differences with the default node.tpl.php
@@ -8,7 +10,8 @@
  *   - Extra check on $sticky because this node might be build with another build mode.
  */
 ?>
-<div class="node <?php if (isset($node_classes)) print $node_classes; ?><?php if ($is_front) { print ' front-node'; } ?><?php if ($sticky && $node->build_mode == 'sticky') { print ' sticky'; } ?><?php if (!$status) { print ' node-unpublished'; } ?> clear-block" id="node-<?php print $node->nid; ?>">
+
+<div class="node <?php if (isset($node_classes)): print $node_classes; endif; ?><?php if ($is_front): print ' front-node'; endif; ?><?php if ($sticky && $node->build_mode == 'sticky'): print ' sticky'; endif; ?><?php if (!$status): print ' node-unpublished'; endif; ?> clear-block" id="node-<?php print $node->nid; ?>">
   <div class="node-inner">
     <div class="buildmode-<?php print $node->build_mode; ?>">
       <?php print $content; ?>
