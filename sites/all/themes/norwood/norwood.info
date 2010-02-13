@@ -1,0 +1,12 @@
+name = Norwegian Wood
+description = Default theme for Norwegian Wood Website
+version = 1.1
+core = 6.x
+engine = phptemplate
+stylesheets[all][] = style.css
+regions[top] = Top
+regions[left] = Left
+regions[right] = Right
+regions[header] = Header
+regions[footer] = Footer
+regions[banner] = Banner

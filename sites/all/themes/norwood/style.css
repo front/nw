@@ -1,0 +1,295 @@
+/* Generic elements */
+body {
+  margin:0;
+  padding:0 0 9px 0;
+  font-size:62.5%;
+  font-family:arial,helvetica,sans-serif;
+  color:#4c4c4c;
+}
+a {
+	color:#4c4c4c;
+	text-decoration:none;
+}
+a:hover {
+	color:#000;
+	text-decoration:underline;
+}
+
+/* general */
+#norwood {
+	background:#000000 url('images/bg.jpg') repeat-x fixed;
+}
+#wrapper {
+	margin:0 auto;
+	width:1024px;
+	clear:both;
+}
+.hide {
+	display:none;
+}
+.clear {
+	clear:both;
+}
+
+/* header */
+#leaf {
+	position:absolute;
+	width:100%;
+	top:0;
+	left:0;
+	height:57px;
+	background:url('images/bg-top.png') no-repeat center top;
+	z-index:999;
+}
+#header {
+	height:139px;
+	position:relative;
+}
+#header #logo {
+	margin:0;
+	padding:0;
+	text-indent:-9000px;
+	position:absolute;
+	width:157px;
+	height:69px;
+	background:url('images/logo.png') no-repeat;
+	left:12px;
+	top:53px;
+}
+#header #logo a {
+	display:block;
+	width:157px;
+	height:69px;
+}
+/* slogan */
+#header small {
+	display:block;
+	text-indent:-9000px;
+	position:absolute;
+	width:125px;
+	height:124px;
+	background:url('images/logo-nw.png') no-repeat;
+	right:9px;
+	top:30px;
+	z-index:-1;
+}
+
+/* navigation */
+#navigation {
+	position:absolute;
+	width:700px;
+	height:38px;
+	background:url('images/dot-navigation.png') repeat-x 0 23px;
+	left:175px;
+	top:75px;
+	z-index:5;
+}
+
+/* secondary menu */
+ul.secondary-links {
+	margin:0;
+	padding:0;
+	list-style-type:none;
+	position:absolute;
+	left:0;
+	top:32px;
+	z-index:1;
+}
+ul.secondary-links li {
+	float:left;
+	text-transform:uppercase;
+	padding:0 6px 0 6px;
+	border-right:1px solid #9D9EA2;
+	line-height:0.8em;
+	z-index:1;
+}
+ul.secondary-links li.first {
+	padding:0 6px 0 0;
+}
+ul.secondary-links li.last {
+	padding:0 0 0 6px;
+	border-right:none;
+}
+ul.secondary-links li  a {
+	color:#9D9EA2;
+}
+
+/* header images  */
+#banner {
+	clear:both;
+
+}
+
+/* content wrapper */
+#content-wrapper, #content-wrapper-bg {
+	float:left;
+	width:1024px;
+	position:relative;
+	z-index:2;
+}
+.colwrapper-left, .colwrapper-left-right {
+	background:#FFFFFF url('images/dot.png') repeat-y 260px 0; 
+}
+.colwrapper-left-right #content-wrapper-bg {
+	background:url('images/dot.png') repeat-y 764px 0; 
+}
+.colwrapper-right {
+	background:#FFFFFF url('images/dot.png') repeat-y 764px 0; 
+}
+
+/* sidebar */
+#sidebar {
+	float:left;
+	overflow:hidden;
+	width:242px;
+	margin:9px 0 9px 9px;
+}
+#sidebar .block, #secondbar .block {
+	background:url('images/dot-horizontal.png') repeat-x left bottom;
+}
+
+/* maincolumn */
+#maincolumn {
+	font-size:1.2em;
+}
+.coltype {
+	margin:9px;
+}
+.coltype-left {
+	margin:9px 9px 9px 0;
+	float:right;
+	width:746px;
+}
+.coltype-right {
+	margin:9px 0 9px 9px;
+	float:left;
+	width:746px;
+}
+.coltype-left-right {
+	margin:9px 0 9px 18px;
+	float:left;
+	width:486px;
+}
+
+/* second bar */
+#secondbar {
+	float:right;
+	overflow:hidden;
+	width:242px;
+	margin:9px 9px 9px 0;
+}
+
+/* footer */
+#footer-wrapper {
+	height:38px;
+	background:url('images/footer.png');
+	width:1024px;
+	position:relative;
+	clear:both;
+	color:#CCCCCC;
+}
+
+/* search box in footer */
+#footer-wrapper #search-box {
+	position:absolute;
+	left:9px;
+	top:7px;
+}
+#footer-wrapper #search-box .form-item {
+	margin-top:0!important;
+	margin-bottom:0!important;
+}
+#footer-wrapper #search-box label {
+	display:none;
+}
+#footer-wrapper #search-box .form-text {
+	border:none;
+	width:220px;
+	height:19px;
+	padding:3px;
+	background:url('images/search.jpg') no-repeat;
+	position:absolute;
+	left:0;
+	top:0;
+}
+#footer-wrapper #search-box .form-submit {
+	border:none;
+	cursor:pointer;
+	width:25px;
+	height:25px;
+	background:url('images/button-search.jpg') no-repeat;
+	text-indent:-9000px;
+	font-size:1px;
+	position:absolute;
+	left:228px;
+	top:0;
+}
+
+/* sitemap in footer */
+#footer-wrapper #link-sitemap {
+	position:absolute;
+	top:13px;
+	left:275px;
+	text-transform:uppercase;
+	background:url('images/icon-sitemap.png') no-repeat;
+	padding:0 0 0 18px;
+}
+#footer-wrapper #link-sitemap a {
+	color:#CCCCCC;
+	text-decoration:none;
+}
+
+/* sponsor in footer */
+#link-sponsor {
+	width:525px;
+	position:absolute;
+	top:9px;
+	right:9px;
+}
+#link-sponsor span {
+	display:block;
+	float:left;
+	margin:0 0 0 14px;
+}
+#link-sponsor #sponsor-text {
+	position:relative;
+	top:4px;
+}
+#link-sponsor #sponsor-louis {
+	width:55px;
+	height:25px;
+	text-indent:-9000px;
+	background:url('images/logo-louis.png') no-repeat;
+	position:relative;
+	top:-2px;
+}
+#link-sponsor #sponsor-dagbladet {
+	width:69px;
+	height:20px;
+	text-indent:-9000px;
+	background:url('images/logo-dagbladet.png') no-repeat;
+}
+#link-sponsor #sponsor-sony {
+	width:111px;
+	height:22px;
+	text-indent:-9000px;
+	background:url('images/logo-sony.png') no-repeat;
+}
+#link-sponsor #sponsor-peppes {
+	width:60px;
+	height:21px;
+	text-indent:-9000px;
+	background:url('images/logo-peppes.jpg') no-repeat;
+}
+
+/* node */
+.node-content {
+	line-height:1.5em;
+}
+
+/* overwrite drupal styles */
+.status {
+	background:#D5DDFF;
+	padding:8px;
+	margin-top:10px;
+}
