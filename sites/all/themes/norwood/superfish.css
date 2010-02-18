@@ -108,6 +108,11 @@ ul.sf-menu li li li.sfHover ul {
 	outline:		0;
 	color:#FFFFFF;
 }
+.sf-menu li li:hover, .sf-menu li li.sfHover,
+.sf-menu li li a:focus, .sf-menu li li a:hover, .sf-menu li li a:active {
+	color:#FFFFFF!important;
+}
+
 
 /*** arrows **/
 .sf-menu a.sf-with-ul {

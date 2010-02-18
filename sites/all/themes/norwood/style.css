@@ -39,7 +39,7 @@ a:hover {
 	left:0;
 	height:57px;
 	background:url('images/bg-top.png') no-repeat center top;
-	z-index:999;
+	z-index:10;
 }
 #header {
 	height:139px;
@@ -60,6 +60,7 @@ a:hover {
 	display:block;
 	width:157px;
 	height:69px;
+	outline:none;
 }
 /* slogan */
 #header small {

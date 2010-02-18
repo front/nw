@@ -14,6 +14,10 @@ if ($right) {
     <?php print $head ?>
     <title><?php print $head_title ?></title>
     <?php print $styles ?>
+	 <!--[if lte IE 6]><style type="text/css" media="all">@import "<?php print $base_path . path_to_theme() ?>/css/ie6.css";</style><![endif]-->
+    <!--[if IE 7]><style type="text/css" media="all">@import "<?php print $base_path . path_to_theme() ?>/css/ie7.css";</style><![endif]-->
+	<link type="text/css" rel="stylesheet" media="all" href="<?php print $base_path . path_to_theme() ?>/superfish.css" />
+	<script type="text/javascript" src="<?php print $base_path . path_to_theme() ?>/superfish.js"></script>
     <?php print $scripts ?>
 	<script type="text/javascript">
     /* <![CDATA[ */
@@ -29,7 +33,7 @@ if ($right) {
      /* ]]> */
     </script>
   </head>
-  <body id="norwood">
+  <body id="norwood" class="<?php print $body_classes; ?>">
   <div id="wrapper">
   
   <!-- header wrap/ -->
