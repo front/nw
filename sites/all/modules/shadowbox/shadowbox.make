@@ -1,4 +1,4 @@
-; $Id: shadowbox.make,v 1.1.2.3 2009/12/10 13:41:57 psynaptic Exp $
+; $Id: shadowbox.make,v 1.1.2.5 2010/02/25 10:41:56 nicholasalipaz Exp $
 ; Drush make file for downloading third party Shadowbox library.
 ; Syntax: http://bit.ly/7rp6vM
 

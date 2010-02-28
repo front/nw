@@ -1,4 +1,4 @@
-// $Id: CHANGELOG.txt,v 1.5.2.37 2010/01/17 19:05:25 sun Exp $
+// $Id: CHANGELOG.txt,v 1.5.2.39 2010/02/19 18:23:45 sun Exp $
 
 Demo x.x-x.x, xxxx-xx-xx
 ------------------------
@@ -6,6 +6,12 @@ Demo x.x-x.x, xxxx-xx-xx
 
 Demo 6.x-1.x, xxxx-xx-xx
 ------------------------
+
+
+Demo 6.x-1.4, 2010-02-19
+------------------------
+#715174 by sun: Fixed Demo Reset block not working.
+#702428 by swentel: Fixed undefined constant REQUEST_TIME error.
 
 
 Demo 6.x-1.3, 2010-01-17

@@ -1,5 +1,5 @@
 <?php
-// $Id: admin.module,v 1.1.2.23.2.10 2010/01/10 16:24:40 yhahn Exp $
+// $Id: admin.module,v 1.1.2.23.2.15 2010/02/22 16:02:42 yhahn Exp $
 
 /**
  * Implementation of hook_init().
@@ -28,6 +28,7 @@ function admin_block($op = 'list', $delta = 0, $edit = array()) {
     case 'list':
       $blocks = array();
       $blocks['create'] = array('info' => t('Create content'), 'admin' => TRUE);
+      $blocks['theme'] = array('info' => t('Theme switcher'), 'admin' => TRUE);
       if (module_exists('menu')) {
         $blocks['menu'] = array('info' => t('Administration menu'), 'admin' => TRUE);
       }
@@ -51,6 +52,9 @@ function admin_block($op = 'list', $delta = 0, $edit = array()) {
             );
           }
           break;
+        case 'theme':
+          module_load_include('inc', 'admin', 'includes/admin.theme');
+          return admin_block_theme();
         case 'menu':
           $item = menu_get_item('admin');
           if ($item && $item['access']) {
@@ -199,15 +203,16 @@ function admin_theme($cache, $type, $theme, $path) {
  * Implementation of hook_theme_registry_alter().
  */
 function admin_theme_registry_alter(&$theme_registry) {
-  // Add an additional page preprocess function prior to all others including template_preprocess_page()
-  // so that our blocks can include JS files as needed.
+  // Remove any existing instances of our pre page preprocessor.
   $position = array_search('admin_preprocess_pre_page', $theme_registry['page']['preprocess functions']);
   if ($position !== FALSE) {
     unset($theme_registry['page']['preprocess functions'][$position]);
-    array_unshift($theme_registry['page']['preprocess functions'], 'admin_preprocess_pre_page');
   }
-  else {
-    array_unshift($theme_registry['page']['preprocess functions'], 'admin_preprocess_pre_page');
+  // Add an additional page preprocess function prior to template_preprocess_page()
+  // so that our blocks can include JS files as needed.
+  $position = array_search('template_preprocess_page', $theme_registry['page']['preprocess functions']);
+  if ($position !== FALSE) {
+    array_splice($theme_registry['page']['preprocess functions'], $position, 0, 'admin_preprocess_pre_page');
   }
 }
 
@@ -281,6 +286,10 @@ function admin_set_admin_blocks($reset = FALSE) {
           list($module, $delta) = $split;
           $block = module_invoke($module, 'block', 'view', $delta);
           if (!empty($block['content'])) {
+            if ($module === 'block') {
+              global $theme;
+              $block['subject'] = db_result(db_query("SELECT title FROM {blocks} WHERE module = 'block' AND delta = '%s'", $delta));
+            }
             $blocks["{$module}-{$delta}"] = $block;
           }
         }
@@ -316,7 +325,7 @@ function admin_preprocess_pre_page(&$vars) {
  * Implementation of hook_preprocess_page().
  */
 function admin_preprocess_page(&$vars) {
-  if ($blocks = admin_get_admin_blocks()) {
+  if (!admin_suppress(FALSE) && $blocks = admin_get_admin_blocks()) {
     $position = admin_get_settings('position');
     $layout = admin_get_settings('layout');
     $class = admin_get_settings('expanded') ? 'admin-expanded' : '';
@@ -328,10 +337,32 @@ function admin_preprocess_page(&$vars) {
  * Implementation of hook_footer().
  */
 function admin_footer() {
-  if ($blocks = admin_get_admin_blocks()) {
+  if (!admin_suppress(FALSE) && $blocks = admin_get_admin_blocks()) {
     $position = admin_get_settings('position');
     $layout = admin_get_settings('layout');
     $class = admin_get_settings('expanded') ? 'admin-expanded' : '';
     return theme('admin_toolbar', $blocks, $position, $layout);
   }
+}
+
+/**
+ * Implementation of hook_suppress().
+ * 
+ * Suppress display of administration toolbar.
+ *
+ * This function should be called from within another module's page callback
+ * preferably using module_invoke_all('suppress') when the menu should not be
+ * displayed. This is useful for modules that implement popup pages or other
+ * special pages where the menu would be distracting or break the layout.
+ *
+ * @param $set
+ *   Defaults to TRUE. If called before hook_footer(), the menu will not be
+ *   displayed. If FALSE is passed, the suppression state is returned.
+ */
+function admin_suppress($set = TRUE) {
+  static $suppress = FALSE;
+  if (!empty($set) && $suppress === FALSE) {
+    $suppress = TRUE;
+  }
+  return $suppress;
 }

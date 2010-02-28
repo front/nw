@@ -1,5 +1,5 @@
 <?php
-// $Id: reference.inc,v 1.1 2009/04/17 00:20:14 quicksketch Exp $
+// $Id: reference.inc,v 1.2 2010/02/21 04:49:05 quicksketch Exp $
 
 /**
  * @file
@@ -187,7 +187,7 @@ function filefield_source_reference_get_files($filename, $field = NULL) {
   $files = array();
   foreach ($fields as $field) {
     $db_info = content_database_info($field);
-    $result = db_query("SELECT f.* FROM {" . $db_info['table'] . "} c INNER JOIN {files} f ON c." . $db_info['columns']['fid']['column'] . " = f.fid WHERE f.filename LIKE '%s%%' AND status = 1", $filename);
+    $result = db_query_range("SELECT f.* FROM {" . $db_info['table'] . "} c INNER JOIN {files} f ON c." . $db_info['columns']['fid']['column'] . " = f.fid WHERE f.filename LIKE '%s%%' AND f.status = 1 ORDER BY f.timestamp DESC", $filename, 0, 30);
     while ($file = db_fetch_object($result)) {
       $files[$file->fid] = $file;
     }

@@ -1,5 +1,5 @@
 <?php
-// $Id: shadowbox.admin.inc,v 1.1.2.8 2010/01/03 22:52:15 psynaptic Exp $
+// $Id: shadowbox.admin.inc,v 1.1.2.10 2010/02/25 10:41:56 nicholasalipaz Exp $
 
 /**
  * @file

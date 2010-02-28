@@ -1,5 +1,5 @@
 <?php
-// $Id: semanticviews.views_default.inc,v 1.1.2.2 2009/09/20 22:42:50 bangpound Exp $
+// $Id: semanticviews.views_default.inc,v 1.1.2.3 2009/10/29 21:57:01 bangpound Exp $
 
 /**
  * Implementation of hook_views_default_views().
@@ -246,6 +246,25 @@ function semanticviews_views_default_views() {
   ));
   $handler = $view->new_display('page', 'Unformatted (semantic)', 'page_4');
   $handler->override_option('style_plugin', 'semanticviews_default');
+  $handler->override_option('style_options', array(
+    'grouping' => '',
+    'group' => array(
+      'element_type' => 'h3',
+      'class' => 'title',
+    ),
+    'list' => array(
+      'element_type' => '',
+      'class' => '',
+    ),
+    'row' => array(
+      'element_type' => 'div',
+      'class' => '',
+      'last_every_nth' => '0',
+      'first_class' => 'first',
+      'last_class' => 'last',
+      'striping_classes' => 'odd even',
+    ),
+  ));
   $handler->override_option('row_plugin', 'semanticviews_fields');
   $handler->override_option('row_options', array(
     'semantic_html' => array(
@@ -305,7 +324,6 @@ function semanticviews_views_default_views() {
   $handler->override_option('style_plugin', 'semanticviews_default');
   $handler->override_option('style_options', array(
     'grouping' => '',
-    'id' => '',
     'group' => array(
       'element_type' => 'h3',
       'class' => 'title',
@@ -367,7 +385,6 @@ function semanticviews_views_default_views() {
   $handler->override_option('style_plugin', 'semanticviews_default');
   $handler->override_option('style_options', array(
     'grouping' => '',
-    'id' => '',
     'group' => array(
       'element_type' => 'h3',
       'class' => 'title',

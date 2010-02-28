@@ -1,5 +1,5 @@
 <?php
-// $Id: semanticviews_plugin_row_fields.inc,v 1.1.2.8 2009/09/26 22:17:39 bangpound Exp $
+// $Id: semanticviews_plugin_row_fields.inc,v 1.1.2.11 2010/02/20 06:04:21 bangpound Exp $
 /**
  * @file
  * Contains the semantic row style plugin.
@@ -20,6 +20,7 @@ class semanticviews_plugin_row_fields extends views_plugin_row {
     // Field element_type and classes cannot be defined in the options
     // definition because the field handlers are not attached when the option
     // defaults are set up in the object's init() method.
+    $options['semantic_html'] = array('default' => array());
     return $options;
   }
 
@@ -65,7 +66,7 @@ class semanticviews_plugin_row_fields extends views_plugin_row {
       '#type' => 'checkbox',
       '#default_value' => $this->options['skip_blank'],
       '#title' => t('Skip empty fields'),
-      '#description' => t('Do not output anything when a field has no content.'),
+      '#description' => t('Do not output anything when a field has no content. This has the same outcome as enabling the <em>Hide if empty</em> option for every field in this display.'),
     );
   }
 

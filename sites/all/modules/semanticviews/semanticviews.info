@@ -5,9 +5,9 @@ core = 6.x
 dependencies[] = views
 package = Views
 
-; Information added by drupal.org packaging script on 2009-10-29
-version = "6.x-1.0-beta1"
+; Information added by drupal.org packaging script on 2010-02-20
+version = "6.x-1.0"
 core = "6.x"
 project = "semanticviews"
-datestamp = "1256853959"
+datestamp = "1266646505"
 
