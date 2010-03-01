@@ -22,6 +22,26 @@ font-size: 12px;
 font-weight: bold;
 }
 
+.view-kampanje img {
+margin-bottom: 10px;
+}
+
+.view-kampanje .views-field-created, .view-kampanje .views-field-body  {
+margin-left: 8px;
+}
+
+.view-kampanje .views-row, #block-views-articles-block_1 .views-row{
+padding: 10px 0;
+background: url('images/hr-dotted.png') no-repeat bottom left;
+}
+
+.view-kampanje .views-row-last, #block-views-articles-block_1 .views-row-last {
+background: none;
+}
+
+.view-kampanje .views-row-first, #block-views-articles-block_1 .views-row-first {
+padding-top: 0;
+}
 
 /* Siste nytt */ 
 
@@ -51,10 +71,10 @@ height: 621px;
 height: 531px;
 }
 
-.field-field-teasertext {
+.teasertext {
 height: 42px;
 overflow: hidden;
-margin-bottom: 15px;
+margin-bottom: 20px;
 }
 
 .view-Program td {
