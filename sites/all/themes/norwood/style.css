@@ -284,6 +284,7 @@ background: #fff;
 	position:absolute;
 	left:0;
 	top:0;
+	margin:0;
 }
 #footer-wrapper #search-box .form-submit {
 	border:none;

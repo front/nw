@@ -1,9 +1,9 @@
 <?php
 
-function  noorwood_settings($saved_settings, $subtheme_defaults = array()) {
+function norwood_settings($saved_settings, $subtheme_defaults = array()) {
 
   // Get the default values from the .info file.
-  $defaults =  noorwood_theme_get_default_settings(' noorwood');
+  $defaults = norwood_theme_get_default_settings('norwood');
 
   // Merge the saved variables and their default values.
   $settings = array_merge($defaults, $saved_settings);
@@ -12,36 +12,36 @@ function  noorwood_settings($saved_settings, $subtheme_defaults = array()) {
    * Create the form using Forms API
    */
 
-  $form[' noorwood_zen_tabs'] = array(
+  $form['norwood_zen_tabs'] = array(
     '#type'          => 'checkbox',
     '#title'         => t('Use Zen Tabs'),
-    '#default_value' => $settings[' noorwood_zen_tabs'],
+    '#default_value' => $settings['norwood_zen_tabs'],
     '#description'   => t('Replace the default tabs by the Zen Tabs.'),
     '#prefix'        => '<strong>' . t('Zen Tabs:') . '</strong>',
   );
 
-  $form[' noorwood_wireframe'] = array(
+  $form['norwood_wireframe'] = array(
     '#type'          => 'checkbox',
     '#title'         => t('Display borders around main layout elements'),
-    '#default_value' => $settings[' noorwood_wireframe'],
+    '#default_value' => $settings['norwood_wireframe'],
     '#description'   => t('<a href="!link">Wireframes</a> are useful when prototyping a website.', array('!link' => 'http://www.boxesandarrows.com/view/html_wireframes_and_prototypes_all_gain_and_no_pain')),
     '#prefix'        => '<strong>' . t('Wireframes:') . '</strong>',
   );
 
-  $form[' noorwood_block_editing'] = array(
+  $form['norwood_block_editing'] = array(
     '#type'          => 'checkbox',
     '#title'         => t('Show block editing on hover'),
     '#description'   => t('When hovering over a block, privileged users will see block editing links.'),
-    '#default_value' => $settings[' noorwood_block_editing'],
+    '#default_value' => $settings['norwood_block_editing'],
     '#prefix'        => '<strong>' . t('Block Edit Links:') . '</strong>',
   );
 
-  $form['themedev'][' noorwood_rebuild_registry'] = array(
+  $form['themedev']['norwood_rebuild_registry'] = array(
     '#type'          => 'checkbox',
     '#title'         => t('Rebuild theme registry on every page.'),
-    '#default_value' => $settings[' noorwood_rebuild_registry'],
+    '#default_value' => $settings['norwood_rebuild_registry'],
     '#description'   => t('During theme development, it can be very useful to continuously <a href="!link">rebuild the theme registry</a>. WARNING: this is a huge performance penalty and must be turned off on production websites.', array('!link' => 'http://drupal.org/node/173880#theme-registry')),
-    '#prefix'        => '<div id="div- noorwood-registry"><strong>' . t('Theme registry:') . '</strong>',
+    '#prefix'        => '<div id="div-norwood-registry"><strong>' . t('Theme registry:') . '</strong>',
     '#suffix'        => '</div>',
   );
 
@@ -50,7 +50,7 @@ function  noorwood_settings($saved_settings, $subtheme_defaults = array()) {
 }
 
 
-function _ noorwood_theme(&$existing, $type, $theme, $path) {
+function _norwood_theme(&$existing, $type, $theme, $path) {
   // Each theme has two possible preprocess functions that can act on a hook.
   // This function applies to every hook.
   $functions[0] = $theme . '_preprocess';
@@ -72,10 +72,10 @@ function _ noorwood_theme(&$existing, $type, $theme, $path) {
 
   // Since we are rebuilding the theme registry and the theme settings' default
   // values may have changed, make sure they are saved in the database properly.
-   noorwood_theme_get_default_settings($theme);
+  norwood_theme_get_default_settings($theme);
 
   // If we are auto-rebuilding the theme registry, warn about feature.
-  if (theme_get_setting(' noorwood_rebuild_registry')) {
+  if (theme_get_setting('norwood_rebuild_registry')) {
     drupal_set_message(t('The theme registry has been rebuilt. <a href="!link">Turn off</a> this feature on production websites.', array('!link' => base_path() . 'admin/build/themes/settings/' . $GLOBALS['theme'])), 'warning');
   }
 
@@ -84,7 +84,7 @@ function _ noorwood_theme(&$existing, $type, $theme, $path) {
 }
 
 
-function  noorwood_theme_get_default_settings($theme) {
+function norwood_theme_get_default_settings($theme) {
   $themes = list_themes();
 
   // Get the default values from the .info file.

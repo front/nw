@@ -1,13 +1,13 @@
 <?php
    
 // Auto-rebuild the theme registry during theme development.
-if (theme_get_setting(' noorwood_rebuild_registry')) {
+if (theme_get_setting('norwood_rebuild_registry')) {
   drupal_rebuild_theme_registry();
 }
 
 // Add Zen Tabs styles
-if (theme_get_setting(' noorwood_zen_tabs')) {
-  drupal_add_css( drupal_get_path('theme', ' noorwood') .'/css/tabs.css', 'theme', 'screen');
+if (theme_get_setting('norwood_zen_tabs')) {
+  drupal_add_css( drupal_get_path('theme', 'norwood') .'/css/tabs.css', 'theme', 'screen');
 }
 
 /*
@@ -19,7 +19,7 @@ if (theme_get_setting(' noorwood_zen_tabs')) {
  *	  The name of the theme function being called ("page" in this case.)
  */
 
-function  noorwood_preprocess_page(&$vars, $hook) {
+function norwood_preprocess_page(&$vars, $hook) {
 
   drupal_add_css(path_to_theme().'/superfish.css', 'theme');
   drupal_add_js(path_to_theme().'/superfish.js', 'theme');
@@ -37,7 +37,7 @@ function  noorwood_preprocess_page(&$vars, $hook) {
   if (user_access('administer blocks')) {
 	  $body_classes[] = 'admin';
 	}
-	if (theme_get_setting(' noorwood_wireframe')) {
+	if (theme_get_setting('norwood_wireframe')) {
     $body_classes[] = 'with-wireframes'; // Optionally add the wireframes style.
   }
   if (!empty($vars['primary_links']) or !empty($vars['secondary_links'])) {
@@ -55,8 +55,8 @@ function  noorwood_preprocess_page(&$vars, $hook) {
     // Add unique classes for each page and website section
     $path = drupal_get_path_alias($_GET['q']);
     list($section, ) = explode('/', $path, 2);
-    $body_classes[] =  noorwood_id_safe('page-'. $path);
-    $body_classes[] =  noorwood_id_safe('section-'. $section);
+    $body_classes[] = norwood_id_safe('page-'. $path);
+    $body_classes[] = norwood_id_safe('section-'. $section);
 
     if (arg(0) == 'node') {
       if (arg(1) == 'add') {
@@ -129,7 +129,7 @@ function  noorwood_preprocess_page(&$vars, $hook) {
  *	  The name of the theme function being called ("node" in this case.)
  */
 
-function  noorwood_preprocess_node(&$vars, $hook) {
+function norwood_preprocess_node(&$vars, $hook) {
   // Special classes for nodes
   $classes = array('node');
   if ($vars['sticky']) {
@@ -155,7 +155,7 @@ function  noorwood_preprocess_node(&$vars, $hook) {
   $classes[] = 'clearfix';
   
   // Class for node type: "node-type-page", "node-type-story", "node-type-my-custom-type", etc.
-  $classes[] =  noorwood_id_safe('node-type-' . $vars['type']);
+  $classes[] = norwood_id_safe('node-type-' . $vars['type']);
   $vars['classes'] = implode(' ', $classes); // Concatenate with spaces
 }
 
@@ -171,14 +171,14 @@ function  noorwood_preprocess_node(&$vars, $hook) {
  *   The name of the theme function being called ("block" in this case.)
  */ 
 
-function  noorwood_preprocess_block(&$vars, $hook) {
+function norwood_preprocess_block(&$vars, $hook) {
     $block = $vars['block'];
 
     // special block classes
     $classes = array('block');
-    $classes[] =  noorwood_id_safe('block-' . $vars['block']->module);
-    $classes[] =  noorwood_id_safe('block-' . $vars['block']->region);
-    $classes[] =  noorwood_id_safe('block-id-' . $vars['block']->bid);
+    $classes[] = norwood_id_safe('block-' . $vars['block']->module);
+    $classes[] = norwood_id_safe('block-' . $vars['block']->region);
+    $classes[] = norwood_id_safe('block-id-' . $vars['block']->bid);
     $classes[] = 'clearfix';
     
     // support for Skinr Module
@@ -188,7 +188,7 @@ function  noorwood_preprocess_block(&$vars, $hook) {
     
     $vars['block_classes'] = implode(' ', $classes); // Concatenate with spaces
 
-    if (theme_get_setting(' noorwood_block_editing') && user_access('administer blocks')) {
+    if (theme_get_setting('norwood_block_editing') && user_access('administer blocks')) {
         // Display 'edit block' for custom blocks.
         if ($block->module == 'block') {
           $edit_links[] = l('<span>' . t('edit block') . '</span>', 'admin/build/block/configure/' . $block->module . '/' . $block->delta,
@@ -257,7 +257,7 @@ function  noorwood_preprocess_block(&$vars, $hook) {
  *    The name of the template being rendered ("comment" in this case.)
  */
 
-function  noorwood_preprocess_comment(&$vars, $hook) {
+function norwood_preprocess_comment(&$vars, $hook) {
   // Add an "unpublished" flag.
   $vars['unpublished'] = ($vars['comment']->status == COMMENT_NOT_PUBLISHED);
 
@@ -306,7 +306,7 @@ function  noorwood_preprocess_comment(&$vars, $hook) {
  * 	  string The rendered menu item.
  */ 	
 
-function  noorwood_menu_item_link($link) {
+function norwood_menu_item_link($link) {
   if (empty($link['localized_options'])) {
     $link['localized_options'] = array();
   }
@@ -325,7 +325,7 @@ function  noorwood_menu_item_link($link) {
  *  Duplicate of theme_menu_local_tasks() but adds clear-block to tabs.
  */
 
-function  noorwood_menu_local_tasks() {
+function norwood_menu_local_tasks() {
   $output = '';
   if ($primary = menu_primary_local_tasks()) {
     if(menu_secondary_local_tasks()) {
@@ -345,7 +345,7 @@ function  noorwood_menu_local_tasks() {
  * 	Add custom classes to menu item
  */	
 	
-function  noorwood_menu_item($link, $has_children, $menu = '', $in_active_trail = FALSE, $extra_class = NULL) {
+function norwood_menu_item($link, $has_children, $menu = '', $in_active_trail = FALSE, $extra_class = NULL) {
   $class = ($menu ? 'expanded' : ($has_children ? 'collapsed' : 'leaf'));
   if (!empty($extra_class)) {
     $class .= ' '. $extra_class;
@@ -354,7 +354,7 @@ function  noorwood_menu_item($link, $has_children, $menu = '', $in_active_trail 
     $class .= ' active-trail';
   }
 #New line added to get unique classes for each menu item
-  $css_class =  noorwood_id_safe(str_replace(' ', '_', strip_tags($link)));
+  $css_class = norwood_id_safe(str_replace(' ', '_', strip_tags($link)));
   return '<li class="'. $class . ' ' . $css_class . '">' . $link . $menu ."</li>\n";
 }
 
@@ -374,7 +374,7 @@ function  noorwood_menu_item($link, $has_children, $menu = '', $in_active_trail 
  *	  The converted string
  */	
 
-function  noorwood_id_safe($string) {
+function norwood_id_safe($string) {
   // Replace with dashes anything that isn't A-Z, numbers, dashes, or underscores.
   $string = strtolower(preg_replace('/[^a-zA-Z0-9_-]+/', '-', $string));
   // If the first character is not a-z, add 'n' in front.
@@ -389,7 +389,7 @@ function  noorwood_id_safe($string) {
  *	Alow you to customize the breadcrumb markup
  */
 
-function  noorwood_breadcrumb($breadcrumb) {
+function norwood_breadcrumb($breadcrumb) {
   if (!empty($breadcrumb)) {
     return '<div class="breadcrumb">'. implode(' » ', $breadcrumb) .'</div>';
   }
