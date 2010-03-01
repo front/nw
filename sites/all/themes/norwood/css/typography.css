@@ -33,7 +33,7 @@ h4 img, h5 img, h6 img {
   margin: 0;
 }
 
-#program-panel h2.bold {
+#program-panel h2.bold, #program-panel h1 {
 color: #F8971D;
 font-family: Georgia;
 font-weight: bold;
@@ -46,6 +46,12 @@ color: #8BC540;
 
 #program-panel h2 {
 font-size: 16px;
+}
+
+h3.block-title {
+font-size: 16px;
+font-family: Georgia;
+text-transform: uppercase;
 }
 
 /* Text elements
