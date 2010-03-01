@@ -1,3 +1,28 @@
+
+/* Display none*/
+.node-type-panel h2.heading {
+display: none;
+}
+
+
+
+/** Front page
+---------------------------------*/
+
+#block-block-2 p {
+margin: 0;
+}
+
+/* /program */
+
+#program-panel {}
+
+#program-panel .panel-panel{
+background: url('images/program-bg.png') no-repeat 0 0;
+height: 621px;
+}
+
+
 /* Generic elements */
 body {
   margin:0;
@@ -136,6 +161,10 @@ ul.secondary-links li  a {
 }
 .colwrapper-right {
 	background:#FFFFFF url('images/dot.png') repeat-y 764px 0; 
+}
+
+#content-wrapper {
+background: #fff;
 }
 
 /* sidebar */
