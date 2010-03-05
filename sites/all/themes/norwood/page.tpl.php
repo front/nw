@@ -39,7 +39,7 @@ if ($right) {
   <!-- header wrap/ -->
   <div id="header">
     <h1 id="logo"><a href="<?php echo base_path(); ?>"><?php echo $site_name; ?></a></h1>
-	<small><?php echo $site_slogan; ?></small>
+	<!--<small><?php echo $site_slogan; ?></small> -->
 	 <!-- top navigation wrap/ -->
     <div id="navigation">
     <?php if ($header) : ?>
