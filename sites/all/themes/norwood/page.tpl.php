@@ -96,7 +96,9 @@ if ($right) {
 	<?php if ($footer): ?>
 	<?php print $footer ?>
 	<?php else: ?>
-		<div id="link-sitemap"><a href="#">Sitemap</a></div>
+    <div id="nyheter-mer"><a href="/nyheter">Les flere nyheter</a></div>
+    <div id="nyheter-eldre"><a href="/nyheter">Les flere nyheter</a></div>
+		<!-- <div id="link-sitemap"><a href="#">Sitemap</a></div> -->
 		<div id="link-sponsor"><span id="sponsor-text">VÅRE SAMARBEIDSPARTNERE:</span> <span id="sponsor-louis">Louis Vidor</span> <span id="sponsor-dagbladet">Dagbladet</span> <span id="sponsor-sony">Sony Ericsson</span> <span id="sponsor-peppes">Peppes Pizza</span></div>
 	<?php endif; ?>
   </div>

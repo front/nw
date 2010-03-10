@@ -20,43 +20,43 @@ function system_patterns($op, $id = null, &$data = null) {
       );
     break;
 
-    // Return a summary of an action
-    case 'summary':
-      switch($id) {
-        case 'system_modules':
-          $enable = $disable = array();
-          for($i=0;$item=$data[$i];$i++) {
-             if ($item[$i]['delete']) {
-               $disable[] = $data[$i]['value'];
-             }
-             else {
-               $enable[] = $data[$i]['value'];
-             }
-          }
-
-          $enable = implode(', ', $enable);
-          $disable = implode(', ', $disable);
-
-          return t('Enabling modules: %enable', array('%enable' => $enable)) .'<br />'. t('Disabling modules: %disable', array('%disable' => $disable));
-        break;
-        case 'variables':
-          for($i=0;$item=$data[$i];$i++) {
-             $variables[] = $item['name'];
-          }
-
-          return t('Setting variables: %vars', array('%vars' => $variables));
-        break;
-        case 'variable':
-          return t('Setting variable %var', array('%var' => $data['name']));
-        break;
-        case 'system_themes_form':
-          return t('Setting theme to %name', array('%name' => $data['value']));
-        break;
-        case 'form':
-          return t('Executing form: %name', array('%name' => $data['form_id']));
-        break;
-      }
-    break;
+//    // Return a summary of an action
+//    case 'summary':
+//      switch($id) {
+//        case 'system_modules':
+//          $enable = $disable = array();
+//          for($i=0;$item=$data[$i];$i++) {
+//             if ($item[$i]['delete']) {
+//               $disable[] = $data[$i]['value'];
+//             }
+//             else {
+//               $enable[] = $data[$i]['value'];
+//             }
+//          }
+//
+//          $enable = implode(', ', $enable);
+//          $disable = implode(', ', $disable);
+//
+//          return t('Enabling modules: %enable', array('%enable' => $enable)) .'<br />'. t('Disabling modules: %disable', array('%disable' => $disable));
+//        break;
+//        case 'variables':
+//          for($i=0;$item=$data[$i];$i++) {
+//             $variables[] = $item['name'];
+//          }
+//
+//          return t('Setting variables: %vars', array('%vars' => $variables));
+//        break;
+//        case 'variable':
+//          return t('Setting variable %var', array('%var' => $data['name']));
+//        break;
+//        case 'system_themes_form':
+//          return t('Setting theme to %name', array('%name' => $data['value']));
+//        break;
+//        case 'form':
+//          return t('Executing form: %name', array('%name' => $data['form_id']));
+//        break;
+//      }
+//    break;
 
     // Prepare data for processing
     case 'prepare':
@@ -95,7 +95,7 @@ function system_patterns($op, $id = null, &$data = null) {
         break;
         case 'modules':
           // Make a <modules>modulename</modules> style tag work
-          if (is_string($data) || ($data['value'] && !$data[0])) {
+          if (is_string($data) || (isset($data['value']) && !isset($data[0]))) {
             $data = array($data);
           }
 
@@ -121,12 +121,13 @@ function system_patterns($op, $id = null, &$data = null) {
             if (is_string($item)) {
               $data[$i] = array('value' => $item);
             }
-            // proccess alias for delete
-            if (isset($item['disable']) && !isset($item['delete'])) {
-              $data[$i]['delete'] = $data[$i]['disable'];
-            }
-            unset($data[$i]['disable']);
           }
+          
+          // proccess alias for delete
+          if (isset($data['disable']) && !isset($data['delete'])) {
+            $data['delete'] = $data['disable'];
+          }
+          unset($data['disable']);
         break;
         case 'theme':
         	if ($data['value']) {
@@ -138,7 +139,7 @@ function system_patterns($op, $id = null, &$data = null) {
           // attempt to load required include file
           $menu = menu_router_build(TRUE);
           foreach ($menu as $item) {
-            if ($item['page arguments'][0] == $data['form_id']) {
+            if (isset($item['page arguments'][0]) && $item['page arguments'][0] == $data['form_id']) {
               $data['include'] = $item['include file'];
               break;
             }
@@ -177,7 +178,7 @@ function system_patterns($op, $id = null, &$data = null) {
           $module = $item['value'];
 
           // Ensure a module can be disabled safely
-          if ($item['delete'] && array_key_exists($module, $modules)) {
+          if (!empty($data['delete']) && array_key_exists($module, $modules)) {
             foreach((array)$modules_info[$module]->info['dependents'] as $dependent) {
               if (array_key_exists($dependent, $modules)) {
                 $remove[] = $i;
@@ -206,7 +207,7 @@ function system_patterns($op, $id = null, &$data = null) {
         }
         if (!empty($remove)) {
           foreach ($data as $key => $item) {
-            if (!in_array($key, $remove)) $result[] = $item;
+            if (!in_array($key, $remove)) $result[$key] = $item;
           }
           $data = $result;
         }
@@ -261,7 +262,7 @@ function system_patterns($op, $id = null, &$data = null) {
         module_load_include('inc', 'system', 'system.admin');
         $modules = module_list();
 
-        $data['status'] = $modules;
+        $data['status'] = array();
 
         if (!is_array($modules_info)) {
           $modules_info = module_rebuild_cache();
@@ -271,22 +272,19 @@ function system_patterns($op, $id = null, &$data = null) {
           $module = $item['value'];
 
           // Set all the dependencies for the module
-          if (!$item['delete']) {
-            foreach((array)$modules_info[$module]->info['dependencies'] as $dependency) {
-              if (!array_key_exists($dependency, $modules)) {
-                $data['status'][$dependency] = $dependency;
-              }
+          foreach((array)$modules_info[$module]->info['dependencies'] as $dependency) {
+            if (!array_key_exists($dependency, $modules)) {
+              $data['status'][$dependency] = $dependency;
             }
-
-            $data['status'] += array($module => $module);
           }
-          else {
-            unset($data['status'][$module]);
-          }
-
+          $data['status'] += array($module => $module);
           unset($data[$i]);
         }
-
+        
+        if (!empty($data['delete'])) {
+          $data['status']['delete'] = 1;
+          unset($data['delete']);
+        }
         return $data;
       }
       else if ($id == 'variables') {
